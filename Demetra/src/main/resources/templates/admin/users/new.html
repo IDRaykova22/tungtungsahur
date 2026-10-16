@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Нов потребител — Администрация — Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="page-container admin-page">
+    <header class="page-header">
+        <div class="breadcrumbs"><a th:href="@{/admin/users}">Администрация / Потребители</a> / Нов</div>
+        <h1>Нов потребител</h1>
+    </header>
+
+    <div class="alert alert-error" th:if="${error}" th:text="${error}" role="alert"></div>
+
+    <form method="post" th:action="@{/admin/users}" th:object="${userForm}" class="card">
+        <fieldset class="role-fieldset">
+            <legend>Роля</legend>
+            <label th:each="r : ${roles}" class="role-option">
+                <input type="radio" th:field="*{role}" th:value="${r.name()}">
+                <span>
+                    <strong th:text="${r.label}">Роля</strong>
+                    <small th:switch="${r.name()}">
+                        <th:block th:case="'STUDENT'">Записва се за събития.</th:block>
+                        <th:block th:case="'ORGANIZER'">Създава събития и вижда отчетите.</th:block>
+                        <th:block th:case="'ADMIN'">Управлява потребителите и ролите.</th:block>
+                    </small>
+                </span>
+            </label>
+        </fieldset>
+
+        <th:block th:replace="~{fragments/user-fields :: profile}"></th:block>
+
+        <div class="form-group">
+            <label for="password">Начална парола</label>
+            <input id="password" th:field="*{password}" type="password" required minlength="8" maxlength="128"
+                   autocomplete="new-password" aria-describedby="password-help">
+            <small id="password-help" class="event-meta">8 до 128 символа, поне една малка и една главна буква.</small>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn">Създай потребител</button>
+            <a th:href="@{/admin/users}" class="btn btn-secondary">Отказ</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

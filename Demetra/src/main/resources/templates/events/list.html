@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Events — Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="page-container">
+    <div class="page-header">
+        <div class="breadcrumbs">Demetra / Events</div>
+        <h1>Musical Events</h1>
+        <a sec:authorize="hasRole('ORGANIZER')" th:href="@{/reports}" class="btn report-entry">Отчети за събитията</a>
+    </div>
+
+    <form method="get" th:action="@{/events}" class="event-filter-form">
+        <div class="form-group">
+            <label for="month">Created in month</label>
+            <input type="month" id="month" name="month" th:value="${month}" required>
+        </div>
+        <div class="form-group">
+            <label for="week">Creation week</label>
+            <select id="week" name="week">
+                <option value="0" th:selected="${week == 0}">All weeks</option>
+                <option value="1" th:selected="${week == 1}">Week 1 (days 1–7)</option>
+                <option value="2" th:selected="${week == 2}">Week 2 (days 8–14)</option>
+                <option value="3" th:selected="${week == 3}">Week 3 (days 15–21)</option>
+                <option value="4" th:selected="${week == 4}">Week 4 (days 22–28)</option>
+                <option value="5" th:selected="${week == 5}">Week 5 (days 29–end)</option>
+            </select>
+        </div>
+        <button type="submit" class="btn">Filter events</button>
+        <a th:href="@{/events}" class="btn btn-secondary">Clear filters</a>
+    </form>
+    <p class="event-meta">Events are filtered and ordered by creation date and time, oldest first.</p>
+
+    <div th:if="${#lists.isEmpty(events)}" class="no-events">
+        <span th:text="${month != null} ? 'No published events were created in this period.' : 'No events have been published yet.'">No events</span>
+        <div sec:authorize="hasRole('ORGANIZER')" style="margin-top: 12px;">
+            <a th:href="@{/events/new}" class="btn">Host an event</a>
+        </div>
+    </div>
+
+    <div class="events-grid" th:unless="${#lists.isEmpty(events)}">
+        <article class="event-card" th:each="event : ${events}">
+            <div class="event-card-image">
+                <span th:text="${event.category ?: 'Event'}">Category</span>
+                <span th:text="'Scheduled: ' + ${#temporals.format(event.startsAt, 'dd MMM yyyy, HH:mm')}" th:if="${event.startsAt}">Scheduled date and time</span>
+                <span th:unless="${event.startsAt}">Date TBA</span>
+            </div>
+            <div class="event-card-body">
+                <h3 th:text="${event.title}">Title</h3>
+                <div class="event-meta" th:text="'Created: ' + ${#temporals.format(event.createdAt, 'dd MMM yyyy, HH:mm')}">Creation date and time</div>
+                <div class="event-meta" th:text="${event.location ?: 'Location TBA'}">Location</div>
+                <div class="event-card-footer">
+                    <span class="badge"
+                          th:classappend="${confirmedCounts.get(event.id) >= event.capacity} ? 'badge-full' : 'badge-open'"
+                          th:text="${confirmedCounts.get(event.id) >= event.capacity} ? 'Full' : 'Open'">Open</span>
+                    <span th:text="${event.price > 0} ? '$' + ${#numbers.formatDecimal(event.price, 1, 2)} : 'Free'">Free</span>
+                </div>
+                <div class="event-meta" th:text="${confirmedCounts.get(event.id)} + ' / ' + ${event.capacity} + ' registered'">0 / 0</div>
+                <span class="badge badge-registered" th:if="${myStatuses != null and myStatuses.get(event.id) == 'CONFIRMED'}">You're registered</span>
+                <span class="badge badge-waitlisted" th:if="${myStatuses != null and myStatuses.get(event.id) == 'WAITLISTED'}">Waitlisted</span>
+                <a th:href="@{'/events/' + ${event.id}}" class="btn" style="text-align:center;">View event</a>
+            </div>
+        </article>
+    </div>
+</div>
+</body>
+</html>

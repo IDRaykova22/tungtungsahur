@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Register — Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="narrow-container">
+    <div class="card auth-card">
+        <h2>Join the gathering</h2>
+        <p>Create a student account to discover recitals, or a teacher account to host them.</p>
+
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+        <form method="post" th:action="@{/register}" th:object="${registerForm}">
+            <div class="role-toggle">
+                <label>
+                    <input type="radio" th:field="*{role}" value="STUDENT" checked="checked">
+                    <span>Student</span>
+                </label>
+                <label>
+                    <input type="radio" th:field="*{role}" value="ORGANIZER">
+                    <span>Teacher</span>
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Full name</label>
+                <input id="name" th:field="*{name}" type="text" required placeholder="Ivan Ivanov">
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input id="email" th:field="*{email}" type="email" required autocomplete="email" placeholder="name@student.edu">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" th:field="*{password}" type="password" required minlength="8" maxlength="128" autocomplete="new-password" placeholder="8+ chars, Aa">
+                <small>8 to 128 characters, at least one uppercase and one lowercase letter.</small>
+            </div>
+            <button type="submit" class="btn">Create account</button>
+        </form>
+
+        <p class="auth-footer">Already have an account? <a th:href="@{/login}">Sign in</a></p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Name, email and phone inputs; include inside a form with th:object. -->
+<th:block th:fragment="profile">
+    <div class="form-group">
+        <label for="name">Име</label>
+        <input id="name" th:field="*{name}" type="text" required minlength="2" maxlength="80" autocomplete="name">
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label for="email">Имейл</label>
+            <input id="email" th:field="*{email}" type="email" required maxlength="254" autocomplete="email">
+        </div>
+        <div class="form-group">
+            <label for="phone">Телефон <span class="optional">(по желание)</span></label>
+            <input id="phone" th:field="*{phone}" type="tel" maxlength="20" autocomplete="tel"
+                   placeholder="+359 88 123 4567" aria-describedby="phone-help">
+            <small id="phone-help" class="event-meta">6 до 15 цифри; разрешени са интервали, „-“, скоби и „+“ в началото.</small>
+        </div>
+    </div>
+</th:block>
+</body>
+</html>

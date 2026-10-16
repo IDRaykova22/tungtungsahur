@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Registered Users — Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="page-container">
+    <div class="page-header">
+        <div class="breadcrumbs">Demetra / Users</div>
+        <h1>Registered Users</h1>
+    </div>
+
+    <form method="get" th:action="@{/users}" class="user-sort-form">
+        <div class="form-group">
+            <label for="sort">Sort by</label>
+            <select id="sort" name="sort">
+                <option value="name" th:selected="${sort != 'date'}">Name (A–Z)</option>
+                <option value="date" th:selected="${sort == 'date'}">Registration date (oldest first)</option>
+            </select>
+        </div>
+        <button type="submit" class="btn">Sort</button>
+    </form>
+
+    <p th:if="${#lists.isEmpty(users)}">No users have registered yet.</p>
+    <div class="users-table-container" th:unless="${#lists.isEmpty(users)}">
+        <table class="users-table">
+            <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Registered on</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="user : ${users}">
+                <td th:text="${user.name}">Name</td>
+                <td th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy, HH:mm')}">Registration date</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

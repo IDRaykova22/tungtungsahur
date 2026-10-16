@@ -1,0 +1,50 @@
+package org.codingburgas.demetra.models.reports;
+
+import lombok.Getter;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
+/** A date range chosen by the user: both dates are inclusive; queries use an exclusive end at midnight after it. */
+@Getter
+public final class ReportPeriod {
+    /** Two years, so that a single report stays readable and the query stays fast. */
+    public static final long MAX_DAYS = 731;
+
+    private final LocalDate startDate;
+    private final LocalDate endDate;
+
+    private ReportPeriod(LocalDate startDate, LocalDate endDate) {
+        this.startDate = startDate;
+        this.endDate = endDate;
+    }
+
+    public static ReportPeriod between(LocalDate from, LocalDate to, LocalDate today) {
+        if (from == null || to == null) {
+            throw new IllegalArgumentException("Изберете начална и крайна дата.");
+        }
+        if (to.isAfter(today)) {
+            throw new IllegalArgumentException("Крайната дата не може да е в бъдещето.");
+        }
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("Началната дата трябва да е преди крайната или същата.");
+        }
+        if (ChronoUnit.DAYS.between(from, to) + 1 > MAX_DAYS) {
+            throw new IllegalArgumentException("Периодът може да е най-много 2 години (" + MAX_DAYS + " дни).");
+        }
+        return new ReportPeriod(from, to);
+    }
+
+    public long getDays() {
+        return ChronoUnit.DAYS.between(startDate, endDate) + 1;
+    }
+
+    public LocalDateTime getStartInclusive() {
+        return startDate.atStartOfDay();
+    }
+
+    public LocalDateTime getEndExclusive() {
+        return endDate.plusDays(1).atStartOfDay();
+    }
+}

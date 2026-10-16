@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${event.title} + ' — Demetra'">Event — Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="page-container">
+    <div class="event-detail-hero">
+        <div class="tag" th:text="${event.category ?: 'Event'}">Category</div>
+        <h1 th:text="${event.title}">Title</h1>
+        <div class="event-detail-meta">
+            <span th:if="${event.startsAt}" th:text="'Date: ' + ${#temporals.format(event.startsAt, 'MMMM d, yyyy HH:mm')}">Date</span>
+            <span th:unless="${event.startsAt}">Date TBA</span>
+            <span th:text="'Location: ' + ${event.location ?: 'Location TBA'}">Location</span>
+        </div>
+    </div>
+
+    <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+    <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+    <div class="event-detail-body">
+        <div>
+            <div class="card">
+                <h2>About this event</h2>
+                <p th:text="${event.description ?: 'Event details will be announced soon.'}">Description</p>
+            </div>
+        </div>
+
+        <aside>
+            <div class="card sidebar-card">
+                <div class="sidebar-label">Admission</div>
+                <div class="sidebar-price" th:text="${event.price > 0} ? '$' + ${#numbers.formatDecimal(event.price, 1, 2)} : 'Free'">Free</div>
+
+                <div class="cap-row">
+                    <span>Registered</span>
+                    <span th:text="${confirmedCount}">0</span>
+                </div>
+                <div class="cap-row">
+                    <span>Capacity</span>
+                    <span th:text="${event.capacity}">0</span>
+                </div>
+                <div class="cap-row">
+                    <span>Available</span>
+                    <span th:text="${confirmedCount >= event.capacity} ? 0 : ${event.capacity - confirmedCount}">0</span>
+                </div>
+
+                <div sec:authorize="isAnonymous()" style="margin-top: 16px;">
+                    <a th:href="@{/login}" class="btn">Sign in to register</a>
+                </div>
+
+                <div sec:authorize="isAuthenticated()" style="margin-top: 16px;">
+                    <div th:if="${registration != null and registration.status.name() == 'CONFIRMED'}">
+                        <span class="badge badge-registered">You're registered</span>
+                        <form method="post" th:action="@{'/events/' + ${event.id} + '/cancel'}" style="margin-top:10px;">
+                            <button type="submit" class="btn btn-secondary">Cancel registration</button>
+                        </form>
+                    </div>
+                    <div th:if="${registration != null and registration.status.name() == 'WAITLISTED'}">
+                        <span class="badge badge-waitlisted">You're on the waitlist</span>
+                        <form method="post" th:action="@{'/events/' + ${event.id} + '/cancel'}" style="margin-top:10px;">
+                            <button type="submit" class="btn btn-secondary">Leave waitlist</button>
+                        </form>
+                    </div>
+                    <form method="post" th:action="@{'/events/' + ${event.id} + '/register'}"
+                          th:if="${registration == null or registration.status.name() == 'CANCELLED'}">
+                        <button type="submit" class="btn" th:text="${confirmedCount >= event.capacity} ? 'Join waitlist' : 'Register for event'">Register</button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+</body>
+</html>

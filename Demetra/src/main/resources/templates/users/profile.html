@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Моят профил — Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="page-container admin-page">
+    <header class="page-header">
+        <div class="breadcrumbs"><a th:href="@{/events}">Demetra</a> / Моят профил</div>
+        <h1>Моят профил</h1>
+        <p class="event-meta">
+            Роля: <span class="badge badge-role" th:text="${user.role.label}">Студент</span>
+            · Регистриран на <span th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}">01.01.2026</span>
+        </p>
+    </header>
+
+    <div class="alert alert-success" th:if="${message}" th:text="${message}" role="status"></div>
+    <div class="alert alert-error" th:if="${error}" th:text="${error}" role="alert"></div>
+
+    <section class="card">
+        <h2>Лични данни</h2>
+        <form method="post" th:action="@{/profile}" th:object="${profileForm}">
+            <th:block th:replace="~{fragments/user-fields :: profile}"></th:block>
+            <p class="event-meta">Ако смените имейла, следващия път влизате с новия.</p>
+            <button type="submit" class="btn">Запази промените</button>
+        </form>
+    </section>
+
+    <p class="event-meta">Ролята и активността на профила се управляват от администратор.</p>
+</main>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${user.name} + ' — Администрация — Demetra'">Потребител — Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="page-container admin-page">
+    <header class="page-header">
+        <div class="breadcrumbs"><a th:href="@{/admin/users}">Администрация / Потребители</a> / <span th:text="${user.name}">Име</span></div>
+        <h1 th:text="${user.name}">Име</h1>
+        <p class="event-meta">
+            <span class="badge badge-role" th:text="${user.role.label}">Роля</span>
+            <span th:if="${user.active}" class="badge badge-open">Активен</span>
+            <span th:unless="${user.active}" class="badge badge-full">Деактивиран</span>
+            · Регистриран на <span th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026</span>
+        </p>
+    </header>
+
+    <div class="alert alert-success" th:if="${message}" th:text="${message}" role="status"></div>
+    <div class="alert alert-error" th:if="${error}" th:text="${error}" role="alert"></div>
+
+    <section class="card report-section" aria-labelledby="profile-heading">
+        <h2 id="profile-heading">Профил</h2>
+        <form method="post" th:action="@{/admin/users/{id}/profile(id=${user.id})}" th:object="${profileForm}">
+            <th:block th:replace="~{fragments/user-fields :: profile}"></th:block>
+            <button type="submit" class="btn">Запази профила</button>
+        </form>
+    </section>
+
+    <section class="card report-section" aria-labelledby="role-heading">
+        <h2 id="role-heading">Роля</h2>
+        <form method="post" th:action="@{/admin/users/{id}/role(id=${user.id})}" class="event-filter-form">
+            <div class="form-group">
+                <label for="role">Роля в системата</label>
+                <select id="role" name="role">
+                    <option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.label}"
+                            th:selected="${r == user.role}">Роля</option>
+                </select>
+            </div>
+            <button type="submit" class="btn">Смени ролята</button>
+        </form>
+        <p class="event-meta">Потребителят излиза от системата и новата роля важи от следващото влизане.</p>
+    </section>
+
+    <section class="card report-section" aria-labelledby="status-heading">
+        <h2 id="status-heading">Активност</h2>
+        <div th:if="${user.active}">
+            <p class="event-meta">
+                Деактивирането не изтрива данните: събитията и записванията остават, но потребителят не може да влиза
+                и не се показва в публичния списък. Профилът може да бъде активиран отново.
+            </p>
+            <form method="post" th:action="@{/admin/users/{id}/deactivate(id=${user.id})}"
+                  onsubmit="return confirm('Да се деактивира ли този профил?');">
+                <button type="submit" class="btn btn-danger">Деактивирай профила</button>
+            </form>
+        </div>
+        <div th:unless="${user.active}">
+            <p class="event-meta">
+                Деактивиран на <strong th:text="${#temporals.format(user.deactivatedAt, 'dd.MM.yyyy HH:mm')}">дата</strong>.
+                Потребителят не може да влиза в системата.
+            </p>
+            <form method="post" th:action="@{/admin/users/{id}/activate(id=${user.id})}">
+                <button type="submit" class="btn">Активирай отново</button>
+            </form>
+        </div>
+    </section>
+</main>
+</body>
+</html>

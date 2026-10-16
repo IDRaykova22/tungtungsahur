@@ -1,0 +1,44 @@
+# Explicit project name: this directory is also named "Demetra" like the original
+# Node/Prisma project, and Compose defaults its project name to the directory name.
+# Without this, `docker compose up` here would reuse that project's container
+# names AND its "demetra_mysqldata" volume — i.e. its actual MySQL data.
+name: demetra-springboot
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: demetra_springboot
+      MYSQL_USER: demetra_springboot
+      MYSQL_PASSWORD: demetra_springboot_password
+    volumes:
+      - mysqldata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u demetra_springboot -pdemetra_springboot_password --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "127.0.0.1:3307:3306"
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/demetra_springboot?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: demetra_springboot
+      SPRING_DATASOURCE_PASSWORD: demetra_springboot_password
+      # Local study administrator, applied at every startup: created if missing, otherwise made an active ADMIN
+      # with this password. The password rules are skipped for it, so keep this local-only.
+      DEMETRA_ADMIN_EMAIL: admin@abv.bg
+      DEMETRA_ADMIN_PASSWORD: admin
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysqldata:

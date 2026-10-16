@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign in — Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<div class="narrow-container">
+    <div class="card auth-card">
+        <h2>Welcome back</h2>
+        <p>Sign in with your email and password to return.</p>
+
+        <div class="alert alert-success" th:if="${param.registered}">
+            Account created. You can sign in now.
+        </div>
+        <div class="alert alert-success" th:if="${param.loggedOut}">
+            You have been signed out.
+        </div>
+        <div class="alert alert-error" th:if="${param.error}">
+            Invalid email or password, or the account has been deactivated.
+        </div>
+
+        <form method="post" th:action="@{/login}">
+            <div class="form-group">
+                <label for="username">Email</label>
+                <input id="username" name="username" type="email" required autocomplete="email" placeholder="name@student.edu">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="Your password">
+            </div>
+            <button type="submit" class="btn">Sign in</button>
+        </form>
+
+        <p class="auth-footer">Don't have an account? <a th:href="@{/register}">Register here</a></p>
+    </div>
+</div>
+</body>
+</html>
