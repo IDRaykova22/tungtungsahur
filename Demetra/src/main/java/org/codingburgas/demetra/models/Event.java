@@ -58,4 +58,9 @@ public class Event {
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+    private String advertisingText;
+    private String advertisingImageUrl;
+    private String videoPath;
+    private String videoFileName;
+    private String videoContentType;
 }

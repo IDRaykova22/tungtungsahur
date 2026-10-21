@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Host an event — Demetra</title>
@@ -17,8 +17,9 @@
 
     <div class="card">
         <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
-
-        <form method="post" th:action="@{/events/new}" th:object="${eventForm}">
+        <form method="post" enctype="multipart/form-data"
+              th:action="${event != null ? '/events/' + event.id + '/edit' : '/events/new'}"
+              th:object="${eventForm}">
             <div class="form-group">
                 <label for="title">Title</label>
                 <input id="title" th:field="*{title}" type="text" required placeholder="Spring Recital">
@@ -50,6 +51,18 @@
             <div class="form-group">
                 <label for="startsAt">Starts at</label>
                 <input id="startsAt" th:field="*{startsAt}" type="datetime-local">
+            </div>
+            <div class="form-group">
+                <label for="advertisingText">Рекламно съдържание</label>
+                <textarea id="advertisingText" th:field="*{advertisingText}" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="advertisingImageUrl">Рекламна снимка</label>
+                <input id="advertisingImageUrl" type="url" th:field="*{advertisingImageUrl}">
+            </div>
+            <div class="form-group" sec:authorize="hasAnyRole('MANAGER', 'ADMIN')">
+                <label for="video">Клипче (MP4 или WebM, до 100 MB)</label>
+                <input id="video" th:field="*{video}" type="file" accept="video/mp4,video/webm">
             </div>
             <button type="submit" class="btn">Publish event</button>
         </form>

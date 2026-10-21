@@ -172,6 +172,7 @@ public class RegistrationInsights {
             case STUDENT -> "студенти";
             case ORGANIZER -> "организатори";
             case ADMIN -> "администратори";
+            case MANAGER -> "мениджъри";
         };
     }
 

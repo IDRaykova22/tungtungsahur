@@ -9,6 +9,8 @@ import org.codingburgas.demetra.repositories.EventRepository;
 import org.codingburgas.demetra.repositories.RegistrationRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.core.io.Resource;
 
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -20,10 +22,13 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final RegistrationRepository registrationRepository;
+    private final VideoStorageService videoStorageService;
 
-    public EventService(EventRepository eventRepository, RegistrationRepository registrationRepository) {
+    public EventService(EventRepository eventRepository, RegistrationRepository registrationRepository,
+                        VideoStorageService videoStorageService) {
         this.eventRepository = eventRepository;
         this.registrationRepository = registrationRepository;
+        this.videoStorageService = videoStorageService;
     }
 
     public List<Event> listPublishedEvents() {
@@ -68,6 +73,32 @@ public class EventService {
         return eventRepository.save(event);
     }
 
+    @Transactional
+    public Event updateEvent(Event event, User editor, MultipartFile video) {
+        if (editor == null || (editor.getRole() != org.codingburgas.demetra.models.Role.MANAGER
+                && editor.getRole() != org.codingburgas.demetra.models.Role.ADMIN
+                && (event.getOrganizer() == null || !event.getOrganizer().getId().equals(editor.getId())))) {
+            throw new SecurityException("Нямате право да редактирате това събитие.");
+        }
+        if (video != null && !video.isEmpty()
+                && editor.getRole() != org.codingburgas.demetra.models.Role.MANAGER
+                && editor.getRole() != org.codingburgas.demetra.models.Role.ADMIN) {
+            throw new SecurityException("Нямате право да качвате видео.");
+        }
+        if (video != null && !video.isEmpty()) {
+            VideoStorageService.StoredVideo stored = videoStorageService.store(video);
+            videoStorageService.delete(event.getVideoPath());
+            event.setVideoPath(stored.path());
+            event.setVideoFileName(stored.originalFileName());
+            event.setVideoContentType(stored.contentType());
+        }
+        return eventRepository.save(event);
+    }
+
+    public Resource loadVideo(String fileName) {
+        return videoStorageService.load(fileName);
+    }
+
     public long confirmedCount(Event event) {
         return registrationRepository.countByEventAndStatus(event, RegistrationStatus.CONFIRMED);
     }
@@ -82,6 +113,9 @@ public class EventService {
 
     @Transactional
     public Registration register(User user, Event event) {
+        if (event.getStatus() != EventStatus.PUBLISHED) {
+            throw new IllegalStateException("Това събитие вече не е активно.");
+        }
         Optional<Registration> existing = registrationRepository.findByUserAndEvent(user, event);
         if (existing.isPresent() && existing.get().getStatus() != RegistrationStatus.CANCELLED) {
             throw new IllegalStateException("You are already registered for this event.");

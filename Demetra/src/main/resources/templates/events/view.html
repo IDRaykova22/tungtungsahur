@@ -22,12 +22,39 @@
 
     <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
     <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+    <div class="alert alert-success" th:if="${deletionRequest != null and deletionRequest.status.name() == 'REJECTED'}">
+        Заявката за изтриване е отхвърлена от администратор.
+    </div>
+    <div class="alert alert-success" th:if="${deletionRequest != null and deletionRequest.status.name() == 'PENDING'}">
+        Заявката за изтриване е в очакване на одобрение.
+    </div>
 
     <div class="event-detail-body">
         <div>
-            <div class="card">
+            <div class="card event-content-card">
                 <h2>About this event</h2>
-                <p th:text="${event.description ?: 'Event details will be announced soon.'}">Description</p>
+                <p class="event-description" th:text="${event.description ?: 'Event details will be announced soon.'}">Description</p>
+
+                <section class="event-media" th:if="${event.videoPath}">
+                    <div class="event-section-heading">
+                        <h3>Видео</h3>
+                        <span>Представяне на събитието</span>
+                    </div>
+                    <video class="event-video" controls preload="metadata">
+                        <source th:src="@{/videos/{file}(file=${event.videoPath})}" th:type="${event.videoContentType}">
+                        Вашият браузър не поддържа видео.
+                    </video>
+                </section>
+
+                <section class="event-ad" th:if="${event.advertisingText != null or event.advertisingImageUrl != null}">
+                    <div class="event-section-heading">
+                        <h3>Реклама</h3>
+                        <span>Специално съдържание</span>
+                    </div>
+                    <p th:if="${event.advertisingText}" th:text="${event.advertisingText}"></p>
+                    <img class="event-ad-image" th:if="${event.advertisingImageUrl}" th:src="${event.advertisingImageUrl}"
+                         alt="Рекламно изображение">
+                </section>
             </div>
         </div>
 
@@ -71,6 +98,16 @@
                         <button type="submit" class="btn" th:text="${confirmedCount >= event.capacity} ? 'Join waitlist' : 'Register for event'">Register</button>
                     </form>
                 </div>
+            </div>
+
+            <div class="card sidebar-card" sec:authorize="hasAnyRole('MANAGER', 'ADMIN')">
+                <a class="btn" th:href="@{/events/{id}/edit(id=${event.id})}">Редактирай</a>
+                <form sec:authorize="hasRole('MANAGER')" method="post"
+                      th:action="@{/events/{id}/deletion-request(id=${event.id})}" style="margin-top:12px;">
+                    <label for="deletionReason">Причина за изтриване</label>
+                    <textarea id="deletionReason" name="reason" required maxlength="2000"></textarea>
+                    <button class="btn btn-secondary" type="submit">Поискай изтриване</button>
+                </form>
             </div>
         </aside>
     </div>

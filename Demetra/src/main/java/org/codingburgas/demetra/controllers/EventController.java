@@ -1,13 +1,19 @@
 package org.codingburgas.demetra.controllers;
 
 import org.codingburgas.demetra.controllers.forms.EventForm;
+import org.codingburgas.demetra.controllers.forms.DeletionRequestForm;
 import org.codingburgas.demetra.models.Event;
 import org.codingburgas.demetra.models.Registration;
 import org.codingburgas.demetra.models.User;
 import org.codingburgas.demetra.services.AppUserPrincipal;
 import org.codingburgas.demetra.services.EventService;
+import org.codingburgas.demetra.services.EventDeletionRequestService;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaTypeFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,9 +35,11 @@ import java.util.Map;
 public class EventController {
 
     private final EventService eventService;
+    private final EventDeletionRequestService deletionRequestService;
 
-    public EventController(EventService eventService) {
+    public EventController(EventService eventService, EventDeletionRequestService deletionRequestService) {
         this.eventService = eventService;
+        this.deletionRequestService = deletionRequestService;
     }
 
     @GetMapping("/events")
@@ -97,6 +105,8 @@ public class EventController {
         event.setCapacity(form.getCapacity());
         event.setPrice(form.getPrice() == null ? 0.0 : form.getPrice());
         event.setStartsAt(startsAt);
+        event.setAdvertisingText(blankToNull(form.getAdvertisingText()));
+        event.setAdvertisingImageUrl(blankToNull(form.getAdvertisingImageUrl()));
 
         Event saved = eventService.createEvent(event, principal.getUser());
         return "redirect:/events/" + saved.getId();
@@ -114,6 +124,10 @@ public class EventController {
 
         if (principal != null) {
             eventService.findRegistration(principal.getUser(), event).ifPresent(reg -> model.addAttribute("registration", reg));
+            if (principal.getUser().getRole() == org.codingburgas.demetra.models.Role.MANAGER) {
+                deletionRequestService.latestFor(event, principal.getUser())
+                        .ifPresent(request -> model.addAttribute("deletionRequest", request));
+            }
         }
 
         return "events/view";
@@ -185,5 +199,119 @@ public class EventController {
             return "Event price must be between 0 and 100000.";
         }
         return null;
+    }
+    @GetMapping("/events/{id}/edit")
+    public String editForm(@PathVariable Long id, Model model, @AuthenticationPrincipal AppUserPrincipal principal) {
+        Event event = eventService.findById(id).orElse(null);
+        if (event == null) {
+            return "redirect:/events";
+        }
+
+        if (!event.getOrganizer().getId().equals(principal.getUser().getId())) {
+            if (principal.getUser().getRole() != org.codingburgas.demetra.models.Role.MANAGER
+                    && principal.getUser().getRole() != org.codingburgas.demetra.models.Role.ADMIN) {
+                return "redirect:/events/" + id;
+            }
+        }
+
+        if (!model.containsAttribute("eventForm")) {
+            EventForm form = new EventForm();
+            form.setTitle(event.getTitle());
+            form.setDescription(event.getDescription());
+            form.setCategory(event.getCategory());
+            form.setLocation(event.getLocation());
+            form.setCapacity(event.getCapacity());
+            form.setPrice(event.getPrice());
+            form.setStartsAt(event.getStartsAt() == null ? "" : event.getStartsAt().toString());
+            form.setAdvertisingText(event.getAdvertisingText());
+            form.setAdvertisingImageUrl(event.getAdvertisingImageUrl());
+            model.addAttribute("eventForm", form);
+        }
+
+        model.addAttribute("event", event);
+        return "events/form";
+    }
+    @PostMapping("/events/{id}/edit")
+    public String updateEvent(@PathVariable Long id,
+                              @ModelAttribute("eventForm") EventForm form,
+                              Model model,
+                              @AuthenticationPrincipal AppUserPrincipal principal) {
+        Event event = eventService.findById(id).orElse(null);
+        if (event == null) {
+            return "redirect:/events";
+        }
+
+        if (!canEdit(event, principal.getUser())) {
+            return "redirect:/events/" + id;
+        }
+
+        String error = validate(form);
+        LocalDateTime startsAt = null;
+        if (error == null && form.getStartsAt() != null && !form.getStartsAt().isBlank()) {
+            try {
+                startsAt = LocalDateTime.parse(form.getStartsAt());
+            } catch (DateTimeParseException ex) {
+                error = "Event date is invalid.";
+            }
+        }
+
+        if (error != null) {
+            model.addAttribute("error", error);
+            model.addAttribute("event", event);
+            return "events/form";
+        }
+
+        event.setTitle(form.getTitle().trim());
+        event.setDescription(form.getDescription() == null ? null : form.getDescription().trim());
+        event.setCategory(form.getCategory() == null ? null : form.getCategory().trim());
+        event.setLocation(form.getLocation() == null ? null : form.getLocation().trim());
+        event.setCapacity(form.getCapacity());
+        event.setPrice(form.getPrice() == null ? 0.0 : form.getPrice());
+        event.setStartsAt(startsAt);
+        event.setAdvertisingText(blankToNull(form.getAdvertisingText()));
+        event.setAdvertisingImageUrl(blankToNull(form.getAdvertisingImageUrl()));
+
+        try {
+            Event saved = eventService.updateEvent(event, principal.getUser(), form.getVideo());
+            return "redirect:/events/" + saved.getId();
+        } catch (IllegalArgumentException | SecurityException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("event", event);
+            return "events/form";
+        }
+    }
+
+    @GetMapping("/videos/{fileName}")
+    public ResponseEntity<Resource> video(@PathVariable String fileName) {
+        Resource resource = eventService.loadVideo(fileName);
+        if (resource == null) return ResponseEntity.notFound().build();
+        MediaType type = MediaTypeFactory.getMediaType(resource.getFilename()).orElse(MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok().contentType(type).body(resource);
+    }
+
+    @PostMapping("/events/{id}/deletion-request")
+    public String requestDeletion(@PathVariable Long id,
+                                  @ModelAttribute("deletionRequestForm") DeletionRequestForm form,
+                                  @AuthenticationPrincipal AppUserPrincipal principal,
+                                  RedirectAttributes redirectAttributes) {
+        Event event = eventService.findById(id).orElse(null);
+        if (event == null) return "redirect:/events";
+        try {
+            deletionRequestService.request(event, principal.getUser(), form.getReason());
+            redirectAttributes.addFlashAttribute("message", "Заявката е изпратена към администратор");
+        } catch (IllegalArgumentException | IllegalStateException | SecurityException ex) {
+            redirectAttributes.addFlashAttribute("error", ex.getMessage());
+        }
+        return "redirect:/events/" + id;
+    }
+
+    private boolean canEdit(Event event, User user) {
+        return user != null && (user.getRole() == org.codingburgas.demetra.models.Role.MANAGER
+                || user.getRole() == org.codingburgas.demetra.models.Role.ADMIN
+                || (event.getOrganizer() != null && event.getOrganizer().getId().equals(user.getId())));
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
     }
 }

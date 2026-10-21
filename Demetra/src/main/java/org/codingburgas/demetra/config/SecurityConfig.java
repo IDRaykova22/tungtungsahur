@@ -21,10 +21,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/register", "/login", "/users", "/css/**", "/images/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/", "/register", "/login", "/users", "/css/**", "/images/**", "/favicon.ico", "/videos/**").permitAll()
                         .requestMatchers("/events/new").hasRole("ORGANIZER")
+                        .requestMatchers("/events/*/edit").hasAnyRole("ORGANIZER", "MANAGER", "ADMIN")
                         .requestMatchers("/reports", "/reports/**").hasRole("ORGANIZER")
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/manager", "/manager/**").hasRole("MANAGER")
+                        .requestMatchers("/events/*/deletion-request").hasRole("MANAGER")
                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/events", "/events/*").permitAll()
                         .anyRequest().authenticated()
                 )

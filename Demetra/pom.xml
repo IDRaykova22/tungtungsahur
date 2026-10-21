@@ -30,6 +30,8 @@
         <java.version>17</java.version>
         <spring-ai.version>2.0.1</spring-ai.version>
         <openpdf.version>2.0.3</openpdf.version>
+        <maven.compiler.source>25</maven.compiler.source>
+        <maven.compiler.target>25</maven.compiler.target>
     </properties>
     <dependencies>
         <dependency>
