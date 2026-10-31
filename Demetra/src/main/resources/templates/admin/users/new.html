@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Нов потребител — Администрация — Demetra</title>
+    <title>New user | Administration | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -12,23 +12,23 @@
 
 <main class="page-container admin-page">
     <header class="page-header">
-        <div class="breadcrumbs"><a th:href="@{/admin/users}">Администрация / Потребители</a> / Нов</div>
-        <h1>Нов потребител</h1>
+        <div class="breadcrumbs"><a th:href="@{/admin/users}">Administration / Users</a> / New</div>
+        <h1>New user</h1>
     </header>
 
     <div class="alert alert-error" th:if="${error}" th:text="${error}" role="alert"></div>
 
     <form method="post" th:action="@{/admin/users}" th:object="${userForm}" class="card">
         <fieldset class="role-fieldset">
-            <legend>Роля</legend>
+            <legend>Role</legend>
             <label th:each="r : ${roles}" class="role-option">
                 <input type="radio" th:field="*{role}" th:value="${r.name()}">
                 <span>
-                    <strong th:text="${r.label}">Роля</strong>
+                    <strong th:text="${r.label}">Role</strong>
                     <small th:switch="${r.name()}">
-                        <th:block th:case="'STUDENT'">Записва се за събития.</th:block>
-                        <th:block th:case="'ORGANIZER'">Създава събития и вижда отчетите.</th:block>
-                        <th:block th:case="'ADMIN'">Управлява потребителите и ролите.</th:block>
+                        <th:block th:case="'STUDENT'">Registers for events.</th:block>
+                        <th:block th:case="'ORGANIZER'">Creates events and views reports.</th:block>
+                        <th:block th:case="'ADMIN'">Manages users and roles.</th:block>
                     </small>
                 </span>
             </label>
@@ -37,15 +37,15 @@
         <th:block th:replace="~{fragments/user-fields :: profile}"></th:block>
 
         <div class="form-group">
-            <label for="password">Начална парола</label>
+            <label for="password">Initial password</label>
             <input id="password" th:field="*{password}" type="password" required minlength="8" maxlength="128"
                    autocomplete="new-password" aria-describedby="password-help">
-            <small id="password-help" class="event-meta">8 до 128 символа, поне една малка и една главна буква.</small>
+            <small id="password-help" class="event-meta">8 to 128 characters, including at least one lowercase and one uppercase letter.</small>
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="btn">Създай потребител</button>
-            <a th:href="@{/admin/users}" class="btn btn-secondary">Отказ</a>
+            <button type="submit" class="btn">Create user</button>
+            <a th:href="@{/admin/users}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
 </main>

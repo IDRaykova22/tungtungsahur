@@ -5,7 +5,7 @@ package org.codingburgas.demetra.services.intelligence;
  *
  * @param slope     change per step (per hour, day or month)
  * @param intercept fitted value at the first step
- * @param r2        coefficient of determination, 0–1: how well the line explains the series
+ * @param r2        coefficient of determination, 0-1: how well the line explains the series
  * @param mean      average value of the series
  */
 public record Trend(double slope, double intercept, double r2, double mean) {

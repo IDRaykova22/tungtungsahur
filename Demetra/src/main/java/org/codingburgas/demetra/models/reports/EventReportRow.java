@@ -23,6 +23,6 @@ public final class EventReportRow {
     private final String organizerName;
 
     public String getStatusLabel() {
-        return status == EventStatus.CLOSED ? "Приключило" : "Публикувано";
+        return status == EventStatus.CLOSED ? "Closed" : "Published";
     }
 }

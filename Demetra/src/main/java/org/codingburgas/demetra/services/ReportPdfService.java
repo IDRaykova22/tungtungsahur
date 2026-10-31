@@ -69,7 +69,7 @@ public class ReportPdfService {
         PdfWriter writer = PdfWriter.getInstance(document, out);
         String period = periodLabel(report.getPeriod());
         writer.setPageEvent(new Footer(period));
-        document.addTitle("Отчет за събитията " + period);
+        document.addTitle("Event report " + period);
         document.addAuthor("Demetra");
         document.addCreator("Demetra");
         document.open();
@@ -78,7 +78,7 @@ public class ReportPdfService {
         addSummary(document, report);
         addGroupChart(document, writer, report);
         if (report.getEvents().isEmpty()) {
-            document.add(note("Няма публикувани или приключили събития, създадени през избрания период.", 18));
+            document.add(note("No published or closed events were created during the selected period.", 18));
             addMethodology(document);
         } else {
             addGroupTable(document, report);
@@ -102,19 +102,19 @@ public class ReportPdfService {
 
     private void addHeader(Document document, EventReport report, String period) {
         document.add(new Paragraph("DEMETRA", font(bold, 9, GOLD)));
-        Paragraph title = new Paragraph("Отчет за събитията", font(bold, 20, NAVY));
+        Paragraph title = new Paragraph("Event report", font(bold, 20, NAVY));
         title.setSpacingAfter(4);
         document.add(title);
         long days = report.getPeriod().getDays();
-        document.add(new Paragraph("Период: " + period + "  ·  " + days + (days == 1 ? " ден" : " дни")
-                + "  ·  групиране " + report.getGrouping().getPhrase(), font(bold, 11, NAVY)));
-        Paragraph meta = new Paragraph("Общ отчет за всички организатори, по дата на създаване на събитието. "
-                + "Генериран на " + LocalDateTime.now(clock).format(DATE_TIME) + ".", font(regular, 9, MUTED));
+        document.add(new Paragraph("Period: " + period + "  |  " + days + (days == 1 ? " day" : " days")
+                + "  |  grouping " + report.getGrouping().getPhrase(), font(bold, 11, NAVY)));
+        Paragraph meta = new Paragraph("A summary for all organizers, grouped by event creation date. "
+                + "Generated on " + LocalDateTime.now(clock).format(DATE_TIME) + ".", font(regular, 9, MUTED));
         meta.setSpacingBefore(2);
         document.add(meta);
         if (report.isTodayIncluded()) {
-            document.add(note("Периодът включва днешния ден, който още не е приключил. Данните отразяват "
-                    + "наличните записи към момента на справката.", 2));
+            document.add(note("The period includes today, which is not complete yet. The data reflects "
+                    + "records available at report time.", 2));
         }
     }
 
@@ -122,16 +122,16 @@ public class ReportPdfService {
         PdfPTable table = new PdfPTable(3);
         table.setWidthPercentage(100);
         table.setSpacingBefore(14);
-        table.addCell(summaryCell("Брой събития", String.valueOf(report.getEventCount())));
-        table.addCell(summaryCell("Потвърдени записвания", String.valueOf(report.getConfirmedCount())));
-        table.addCell(summaryCell("Изчислена сума (USD)", money(report.getEstimatedAmount()) + " $"));
+        table.addCell(summaryCell("Event count", String.valueOf(report.getEventCount())));
+        table.addCell(summaryCell("Confirmed registrations", String.valueOf(report.getConfirmedCount())));
+        table.addCell(summaryCell("Estimated amount (USD)", money(report.getEstimatedAmount()) + " $"));
         document.add(table);
     }
 
     private void addGroupChart(Document document, PdfWriter writer, EventReport report) {
         float width = document.right() - document.left();
         PdfPCell chart = new PdfPCell(Image.getInstance(drawGroupChart(writer, report.getGroupRows(), width, 190)), false);
-        document.add(withHeading("Изчислена сума " + report.getGrouping().getPhrase() + " (USD)", chart, 14));
+        document.add(withHeading("Estimated amount " + report.getGrouping().getPhrase() + " (USD)", chart, 14));
     }
 
     private PdfTemplate drawGroupChart(PdfWriter writer, List<ReportGroupRow> rows, float width, float height) {
@@ -144,7 +144,7 @@ public class ReportPdfService {
 
         if (max.signum() == 0) {
             line(t, left, bottom, width - right, bottom, MUTED);
-            text(t, regular, 9, MUTED, PdfContentByte.ALIGN_CENTER, "Няма изчислена сума за периода.",
+            text(t, regular, 9, MUTED, PdfContentByte.ALIGN_CENTER, "There is no estimated amount for this period.",
                     left + plotWidth / 2, bottom + plotHeight / 2);
             return t;
         }
@@ -180,40 +180,40 @@ public class ReportPdfService {
 
     private void addGroupTable(Document document, EventReport report) {
         ReportGrouping grouping = report.getGrouping();
-        ReportTable table = new ReportTable("Групиране " + grouping.getPhrase(), new float[]{3, 1.2f, 2, 2, 1.4f}, 1,
-                grouping.getLabel(), "Събития", "Потвърдени записвания", "Изчислена сума (USD)", "Дял от сумата");
+        ReportTable table = new ReportTable("Grouping " + grouping.getPhrase(), new float[]{3, 1.2f, 2, 2, 1.4f}, 1,
+                grouping.getLabel(), "Events", "Confirmed registrations", "Estimated amount (USD)", "Share of amount");
         for (ReportGroupRow row : report.getGroupRows()) {
             table.row(row.getLabel(), String.valueOf(row.getEventCount()), String.valueOf(row.getConfirmedCount()),
                     money(row.getEstimatedAmount()) + " $", share(row.getEstimatedAmount(), report.getEstimatedAmount()));
         }
-        document.add(table.finish("Общо", String.valueOf(report.getEventCount()),
+        document.add(table.finish("Total", String.valueOf(report.getEventCount()),
                 String.valueOf(report.getConfirmedCount()), money(report.getEstimatedAmount()) + " $",
-                report.getEstimatedAmount().signum() == 0 ? "—" : "100,0 %"));
+                report.getEstimatedAmount().signum() == 0 ? "-" : "100.0 %"));
     }
 
     private void addEventsTable(Document document, EventReport report) {
-        ReportTable table = new ReportTable("Включени събития",
+        ReportTable table = new ReportTable("Included events",
                 new float[]{3.4f, 1.8f, 1.3f, 1.5f, 1.5f, 1.2f, 1.1f, 1.5f}, 5,
-                "Събитие", "Категория", "Статус", "Създадено на", "Провеждане", "Цена (USD)", "Потвърдени",
-                "Изчислена сума (USD)");
+                "Event", "Category", "Status", "Created on", "Event date", "Price (USD)", "Confirmed",
+                "Estimated amount (USD)");
         for (EventReportRow row : report.getEvents()) {
             table.row(row.getTitle(), row.getCategory(), row.getStatusLabel(), row.getCreatedAt().format(DATE_TIME),
-                    row.getStartsAt() != null ? row.getStartsAt().format(DATE_TIME) : "Не е определено",
+                    row.getStartsAt() != null ? row.getStartsAt().format(DATE_TIME) : "Not specified",
                     money(row.getPrice()) + " $", String.valueOf(row.getConfirmedCount()),
                     money(row.getEstimatedAmount()) + " $");
         }
-        document.add(table.finish("Общо", "", "", "", "", "", String.valueOf(report.getConfirmedCount()),
+        document.add(table.finish("Total", "", "", "", "", "", String.valueOf(report.getConfirmedCount()),
                 money(report.getEstimatedAmount()) + " $"));
     }
 
     private void addMethodology(Document document) {
         PdfPCell text = new PdfPCell();
         // addElement (not the constructor) keeps the paragraph's own line spacing.
-        text.addElement(note("Сумата е цената на всяко събитие × текущия брой потвърдени записвания. "
-                + "Няма регистрирани реални плащания. Изчакващи и отказани записвания не участват. "
-                + "Включват се публикувани и приключили събития; чернови и отменени събития се изключват. "
-                + "Валутата USD следва съществуващите цени в приложението.", 0));
-        document.add(withHeading("Как е изчислена сумата", text, 18));
+        text.addElement(note("The amount is each event price multiplied by its current confirmed registrations. "
+                + "No real payments are recorded. Waiting list and rejected registrations are excluded. "
+                + "Published and closed events are included. Draft and cancelled events are excluded. "
+                + "USD follows the existing prices in the application.", 0));
+        document.add(withHeading("How the amount is calculated", text, 18));
     }
 
     /** Heading and content share one unsplittable table so the heading never ends a page alone. */
@@ -381,7 +381,7 @@ public class ReportPdfService {
     }
 
     private static String periodLabel(ReportPeriod period) {
-        return period.getStartDate().format(DATE) + " – " + period.getEndDate().format(DATE);
+        return period.getStartDate().format(DATE) + " - " + period.getEndDate().format(DATE);
     }
 
     /** Same format as the web page: "1 234,56". */
@@ -394,7 +394,7 @@ public class ReportPdfService {
 
     private static String share(BigDecimal part, BigDecimal total) {
         if (total.signum() == 0) {
-            return "—";
+            return "-";
         }
         BigDecimal percent = part.multiply(BigDecimal.valueOf(100)).divide(total, 1, RoundingMode.HALF_UP);
         return percent.toPlainString().replace('.', ',') + " %";
@@ -404,7 +404,7 @@ public class ReportPdfService {
         try (InputStream in = new ClassPathResource(path).getInputStream()) {
             return BaseFont.createFont(path, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, true, in.readAllBytes(), null);
         } catch (IOException ex) {
-            throw new UncheckedIOException("Шрифтът " + path + " липсва в classpath.", ex);
+            throw new UncheckedIOException("The font " + path + " is missing from the classpath.", ex);
         }
     }
 
@@ -420,9 +420,9 @@ public class ReportPdfService {
             PdfContentByte canvas = writer.getDirectContent();
             float y = document.bottom() - 22;
             line(canvas, document.left(), y + 12, document.right(), y + 12, BORDER);
-            text(canvas, regular, 8, MUTED, PdfContentByte.ALIGN_LEFT, "Demetra · Отчет за " + period,
+            text(canvas, regular, 8, MUTED, PdfContentByte.ALIGN_LEFT, "Demetra | Report for " + period,
                     document.left(), y);
-            text(canvas, regular, 8, MUTED, PdfContentByte.ALIGN_RIGHT, "Страница " + writer.getPageNumber(),
+            text(canvas, regular, 8, MUTED, PdfContentByte.ALIGN_RIGHT, "Page " + writer.getPageNumber(),
                     document.right(), y);
         }
     }

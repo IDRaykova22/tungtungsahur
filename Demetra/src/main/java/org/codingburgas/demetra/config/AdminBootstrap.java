@@ -27,7 +27,7 @@ public class AdminBootstrap implements ApplicationRunner {
                           @Value("${demetra.admin.password:}") String password) {
         this.userService = userService;
         // Default kept in Java: application.properties is read as ISO-8859-1 and would garble Cyrillic.
-        this.name = name.isBlank() ? "Администратор" : name;
+        this.name = name.isBlank() ? "Administrator" : name;
         this.email = email;
         this.password = password;
     }

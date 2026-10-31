@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Host an event — Demetra</title>
+    <title>Host an event | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -53,15 +53,15 @@
                 <input id="startsAt" th:field="*{startsAt}" type="datetime-local">
             </div>
             <div class="form-group">
-                <label for="advertisingText">Рекламно съдържание</label>
+                <label for="advertisingText">Advertising copy</label>
                 <textarea id="advertisingText" th:field="*{advertisingText}" rows="3"></textarea>
             </div>
             <div class="form-group">
-                <label for="advertisingImageUrl">Рекламна снимка</label>
+                <label for="advertisingImageUrl">Advertising image</label>
                 <input id="advertisingImageUrl" type="url" th:field="*{advertisingImageUrl}">
             </div>
             <div class="form-group" sec:authorize="hasAnyRole('MANAGER', 'ADMIN')">
-                <label for="video">Клипче (MP4 или WebM, до 100 MB)</label>
+                <label for="video">Video (MP4 or WebM, up to 100 MB)</label>
                 <input id="video" th:field="*{video}" type="file" accept="video/mp4,video/webm">
             </div>
             <button type="submit" class="btn">Publish event</button>

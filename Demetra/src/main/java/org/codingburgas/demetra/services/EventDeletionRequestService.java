@@ -27,13 +27,13 @@ public class EventDeletionRequestService {
     @Transactional
     public EventDeletionRequest request(Event event, User manager, String reason) {
         if (manager == null || manager.getRole() != Role.MANAGER) {
-            throw new SecurityException("Само Manager може да изпраща заявка за изтриване.");
+            throw new SecurityException("Only a manager can submit a deletion request.");
         }
         if (reason == null || reason.trim().isBlank()) {
-            throw new IllegalArgumentException("Причината за изтриване е задължителна.");
+            throw new IllegalArgumentException("A deletion reason is required.");
         }
         if (requestRepository.existsByEventIdAndStatus(event.getId(), DeletionRequestStatus.PENDING)) {
-            throw new IllegalStateException("За това събитие вече има изпратена заявка.");
+            throw new IllegalStateException("A request has already been submitted for this event.");
         }
         EventDeletionRequest request = new EventDeletionRequest();
         request.setEvent(event);
@@ -57,7 +57,7 @@ public class EventDeletionRequestService {
         requireAdmin(admin);
         EventDeletionRequest request = load(id);
         if (request.getStatus() != DeletionRequestStatus.PENDING) {
-            throw new IllegalStateException("Заявката вече е обработена.");
+            throw new IllegalStateException("This request has already been processed.");
         }
         request.setStatus(DeletionRequestStatus.APPROVED);
         request.setReviewedBy(admin);
@@ -76,7 +76,7 @@ public class EventDeletionRequestService {
         requireAdmin(admin);
         EventDeletionRequest request = load(id);
         if (request.getStatus() != DeletionRequestStatus.PENDING) {
-            throw new IllegalStateException("Заявката вече е обработена.");
+            throw new IllegalStateException("This request has already been processed.");
         }
         request.setStatus(DeletionRequestStatus.REJECTED);
         request.setReviewedBy(admin);
@@ -86,12 +86,12 @@ public class EventDeletionRequestService {
 
     private EventDeletionRequest load(Long id) {
         return requestRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Заявката не е намерена."));
+                .orElseThrow(() -> new IllegalArgumentException("The request was not found."));
     }
 
     private void requireAdmin(User admin) {
         if (admin == null || admin.getRole() != Role.ADMIN) {
-            throw new SecurityException("Нямате права за тази операция.");
+            throw new SecurityException("You are not allowed to perform this operation.");
         }
     }
 }

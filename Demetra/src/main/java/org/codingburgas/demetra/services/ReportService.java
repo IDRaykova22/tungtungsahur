@@ -104,7 +104,7 @@ public class ReportService {
     }
 
     private static String label(EventStatus status) {
-        return status == EventStatus.CLOSED ? "Приключило" : "Публикувано";
+        return status == EventStatus.CLOSED ? "Closed" : "Published";
     }
 
     private EventReportRow toReportRow(EventReportProjection source) {
@@ -112,7 +112,7 @@ public class ReportService {
         BigDecimal price = BigDecimal.valueOf(source.getPrice()).setScale(2, RoundingMode.HALF_UP);
         BigDecimal amount = price.multiply(BigDecimal.valueOf(source.getConfirmedCount()));
         String category = source.getCategory() == null || source.getCategory().isBlank()
-                ? "Без категория" : source.getCategory().trim();
+                ? "Uncategorized" : source.getCategory().trim();
         return new EventReportRow(source.getId(), source.getTitle(), category, source.getStatus(),
                 source.getCreatedAt(), source.getStartsAt(), price, source.getConfirmedCount(), amount,
                 source.getOrganizerId(), source.getOrganizerName());

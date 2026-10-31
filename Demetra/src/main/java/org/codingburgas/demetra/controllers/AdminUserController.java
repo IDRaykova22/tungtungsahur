@@ -75,7 +75,7 @@ public class AdminUserController {
         try {
             User user = userService.createUser(form.getName(), form.getEmail(), form.getPhone(), form.getPassword(),
                     parseRole(form.getRole()));
-            redirect.addFlashAttribute("message", "Потребителят „" + user.getName() + "“ е създаден.");
+            redirect.addFlashAttribute("message", "User \"" + user.getName() + "\" was created.");
             return "redirect:/admin/users/" + user.getId();
         } catch (IllegalArgumentException ex) {
             model.addAttribute("error", ex.getMessage());
@@ -111,26 +111,26 @@ public class AdminUserController {
             model.addAttribute("error", ex.getMessage());
             return "admin/users/edit";
         }
-        redirect.addFlashAttribute("message", "Профилът е обновен.");
+        redirect.addFlashAttribute("message", "The profile was updated.");
         return "redirect:/admin/users/" + id;
     }
 
     @PostMapping("/{id}/role")
     public String changeRole(@PathVariable Long id, @RequestParam String role, Authentication authentication,
                              RedirectAttributes redirect) {
-        return act(id, redirect, "Ролята е променена.",
+        return act(id, redirect, "The role was changed.",
                 () -> userService.changeRole(id, parseRole(role), authentication.getName()));
     }
 
     @PostMapping("/{id}/deactivate")
     public String deactivate(@PathVariable Long id, Authentication authentication, RedirectAttributes redirect) {
-        return act(id, redirect, "Профилът е деактивиран. Потребителят вече не може да влиза в системата.",
+        return act(id, redirect, "The account was deactivated. The user can no longer sign in.",
                 () -> userService.deactivate(id, authentication.getName()));
     }
 
     @PostMapping("/{id}/activate")
     public String activate(@PathVariable Long id, RedirectAttributes redirect) {
-        return act(id, redirect, "Профилът е активиран отново.", () -> userService.activate(id));
+        return act(id, redirect, "The account was reactivated.", () -> userService.activate(id));
     }
 
     private String act(Long id, RedirectAttributes redirect, String success, Runnable action) {

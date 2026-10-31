@@ -4,10 +4,10 @@ import java.util.Locale;
 
 /** The criterion the report rows are grouped by; chosen by the user in the filter. */
 public enum ReportGrouping {
-    MONTH("month", "Месец", "по месеци"),
-    CATEGORY("category", "Категория", "по категории"),
-    STATUS("status", "Статус", "по статус"),
-    ORGANIZER("organizer", "Организатор", "по организатори");
+    MONTH("month", "Month", "by month"),
+    CATEGORY("category", "Category", "by category"),
+    STATUS("status", "Status", "by status"),
+    ORGANIZER("organizer", "Organizer", "by organizer");
 
     private final String key;
     private final String label;

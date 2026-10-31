@@ -8,10 +8,10 @@ import java.time.temporal.ChronoUnit;
  * "+50 %" always compares equal lengths.
  */
 public enum RegistrationPeriod {
-    TODAY("today", "Днес", "днес", "предходния ден"),
-    WEEK("week", "7 дни", "последните 7 дни", "предходните 7 дни"),
-    MONTH("month", "Месец", "последния месец", "предходния месец"),
-    YEAR("year", "Година", "последната година", "предходната година");
+    TODAY("today", "Today", "today", "the previous day"),
+    WEEK("week", "7 days", "the last 7 days", "the previous 7 days"),
+    MONTH("month", "Month", "the last month", "the previous month"),
+    YEAR("year", "Year", "the last year", "the previous year");
 
     private final String key;
     private final String label;

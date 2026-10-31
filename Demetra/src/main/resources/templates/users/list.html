@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Registered Users — Demetra</title>
+    <title>Registered users | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -20,7 +20,7 @@
         <div class="form-group">
             <label for="sort">Sort by</label>
             <select id="sort" name="sort">
-                <option value="name" th:selected="${sort != 'date'}">Name (A–Z)</option>
+                <option value="name" th:selected="${sort != 'date'}">Name (A-Z)</option>
                 <option value="date" th:selected="${sort == 'date'}">Registration date (oldest first)</option>
             </select>
         </div>

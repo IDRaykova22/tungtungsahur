@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Потребители — Администрация — Demetra</title>
+    <title>Users | Administration | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -13,40 +13,40 @@
 <main class="page-container">
     <header class="page-header report-section-header">
         <div>
-            <div class="breadcrumbs"><a th:href="@{/events}">Demetra</a> / Администрация</div>
-            <h1>Потребители</h1>
+            <div class="breadcrumbs"><a th:href="@{/events}">Demetra</a> / Administration</div>
+            <h1>Users</h1>
         </div>
         <div class="report-actions">
-            <a th:href="@{/admin/registrations}" class="btn btn-secondary">Нови регистрации</a>
-            <a th:href="@{/admin/users/new}" class="btn">Нов потребител</a>
+            <a th:href="@{/admin/registrations}" class="btn btn-secondary">New registrations</a>
+            <a th:href="@{/admin/users/new}" class="btn">New user</a>
         </div>
     </header>
 
     <form method="get" th:action="@{/admin/users}" class="card user-search-form" role="search">
         <div class="form-group user-search-query">
-            <label for="q">Търсене</label>
+            <label for="q">Search</label>
             <input id="q" name="q" type="search" th:value="${search.q}" maxlength="100"
-                   placeholder="Име, имейл или телефон" aria-describedby="q-help">
-            <small id="q-help" class="event-meta">Всяка дума трябва да се съдържа в името, имейла или телефона.</small>
+                   placeholder="Name, email or phone" aria-describedby="q-help">
+            <small id="q-help" class="event-meta">Every word must appear in the name, email or phone number.</small>
         </div>
         <div class="form-group">
-            <label for="role">Роля</label>
+            <label for="role">Role</label>
             <select id="role" name="role">
-                <option value="">Всички роли</option>
+                <option value="">All roles</option>
                 <option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.label}"
-                        th:selected="${r.name() == search.role}">Роля</option>
+                        th:selected="${r.name() == search.role}">Role</option>
             </select>
         </div>
         <div class="form-group">
-            <label for="status">Статус</label>
+            <label for="status">Status</label>
             <select id="status" name="status">
-                <option value="all" th:selected="${search.status == 'all'}">Всички</option>
-                <option value="active" th:selected="${search.status == 'active'}">Активни</option>
-                <option value="inactive" th:selected="${search.status == 'inactive'}">Деактивирани</option>
+                <option value="all" th:selected="${search.status == 'all'}">All</option>
+                <option value="active" th:selected="${search.status == 'active'}">Active</option>
+                <option value="inactive" th:selected="${search.status == 'inactive'}">Inactive</option>
             </select>
         </div>
         <div class="form-group">
-            <label for="size">На страница</label>
+            <label for="size">Per page</label>
             <select id="size" name="size">
                 <option th:each="s : ${pageSizes}" th:value="${s}" th:text="${s}" th:selected="${s == search.size}">10</option>
             </select>
@@ -55,23 +55,23 @@
         <input type="hidden" name="sort" th:value="${search.sort}">
         <input type="hidden" name="dir" th:value="${search.dir}">
         <div class="form-actions">
-            <button type="submit" class="btn">Търси</button>
-            <a th:if="${search.filtered}" th:href="@{/admin/users}" class="btn btn-secondary">Изчисти</a>
+            <button type="submit" class="btn">Search</button>
+            <a th:if="${search.filtered}" th:href="@{/admin/users}" class="btn btn-secondary">Clear</a>
         </div>
     </form>
 
     <p class="search-summary" role="status">
-        <th:block th:if="${users.totalElements == 0}">Няма намерени потребители.</th:block>
+        <th:block th:if="${users.totalElements == 0}">No users found.</th:block>
         <th:block th:unless="${users.totalElements == 0}">
-            Намерени <strong th:text="${users.totalElements}">0</strong>
-            <th:block th:text="${users.totalElements == 1} ? 'потребител' : 'потребителя'">потребителя</th:block>
-            · показани <span th:text="${users.number * users.size + 1}">1</span>–<span th:text="${users.number * users.size + users.numberOfElements}">10</span>
+            Found <strong th:text="${users.totalElements}">0</strong>
+            <th:block th:text="${users.totalElements == 1} ? 'user' : 'users'">users</th:block>
+            | showing <span th:text="${users.number * users.size + 1}">1</span> to <span th:text="${users.number * users.size + users.numberOfElements}">10</span>
         </th:block>
     </p>
 
     <div th:if="${users.totalElements == 0}" class="card no-events">
-        <p>Няма потребители по избраните критерии.</p>
-        <a th:if="${search.filtered}" th:href="@{/admin/users}" class="btn btn-secondary">Покажи всички</a>
+        <p>No users match the selected criteria.</p>
+        <a th:if="${search.filtered}" th:href="@{/admin/users}" class="btn btn-secondary">Show all</a>
     </div>
 
     <div class="users-table-container" th:unless="${users.totalElements == 0}">
@@ -79,57 +79,57 @@
             <thead>
             <tr>
                 <th scope="col" th:aria-sort="${search.ariaSort('name')}">
-                    <a th:href="@{${search.sortUrl('name')}}" class="sort-link">Име <span aria-hidden="true" th:text="${search.sortIndicator('name')}">↕</span></a>
+                    <a th:href="@{${search.sortUrl('name')}}" class="sort-link">Name <span aria-hidden="true" th:text="${search.sortIndicator('name')}">↕</span></a>
                 </th>
                 <th scope="col" th:aria-sort="${search.ariaSort('email')}">
-                    <a th:href="@{${search.sortUrl('email')}}" class="sort-link">Имейл <span aria-hidden="true" th:text="${search.sortIndicator('email')}">↕</span></a>
+                    <a th:href="@{${search.sortUrl('email')}}" class="sort-link">Email <span aria-hidden="true" th:text="${search.sortIndicator('email')}">↕</span></a>
                 </th>
-                <th scope="col">Телефон</th>
+                <th scope="col">Phone</th>
                 <th scope="col" th:aria-sort="${search.ariaSort('role')}">
-                    <a th:href="@{${search.sortUrl('role')}}" class="sort-link">Роля <span aria-hidden="true" th:text="${search.sortIndicator('role')}">↕</span></a>
+                    <a th:href="@{${search.sortUrl('role')}}" class="sort-link">Role <span aria-hidden="true" th:text="${search.sortIndicator('role')}">↕</span></a>
                 </th>
-                <th scope="col">Статус</th>
+                <th scope="col">Status</th>
                 <th scope="col" th:aria-sort="${search.ariaSort('date')}">
-                    <a th:href="@{${search.sortUrl('date')}}" class="sort-link">Регистриран <span aria-hidden="true" th:text="${search.sortIndicator('date')}">↕</span></a>
+                    <a th:href="@{${search.sortUrl('date')}}" class="sort-link">Registered <span aria-hidden="true" th:text="${search.sortIndicator('date')}">↕</span></a>
                 </th>
-                <th scope="col" aria-label="Действия"></th>
+                <th scope="col" aria-label="Actions"></th>
             </tr>
             </thead>
             <tbody>
             <tr th:each="u : ${users.content}" th:classappend="${u.active} ? '' : 'row-inactive'">
                 <td>
-                    <span th:text="${u.name}">Име</span>
-                    <span th:if="${u.email == currentEmail}" class="event-meta">(вие)</span>
+                    <span th:text="${u.name}">Name</span>
+                    <span th:if="${u.email == currentEmail}" class="event-meta">(you)</span>
                 </td>
                 <td th:text="${u.email}">email</td>
-                <td th:text="${u.phone ?: '—'}">—</td>
-                <td><span class="badge badge-role" th:text="${u.role.label}">Роля</span></td>
+                <td th:text="${u.phone ?: '-'}">-</td>
+                <td><span class="badge badge-role" th:text="${u.role.label}">Role</span></td>
                 <td>
-                    <span th:if="${u.active}" class="badge badge-open">Активен</span>
+                    <span th:if="${u.active}" class="badge badge-open">Active</span>
                     <span th:unless="${u.active}" class="badge badge-full"
-                          th:title="'Деактивиран на ' + ${#temporals.format(u.deactivatedAt, 'dd.MM.yyyy HH:mm')}">Деактивиран</span>
+                          th:title="'Deactivated on ' + ${#temporals.format(u.deactivatedAt, 'dd.MM.yyyy HH:mm')}">Inactive</span>
                 </td>
                 <td th:text="${#temporals.format(u.createdAt, 'dd.MM.yyyy')}">01.01.2026</td>
                 <td>
-                    <a th:if="${u.email != currentEmail}" th:href="@{/admin/users/{id}(id=${u.id})}" class="table-link">Управление</a>
-                    <a th:if="${u.email == currentEmail}" th:href="@{/profile}" class="table-link">Моят профил</a>
+                    <a th:if="${u.email != currentEmail}" th:href="@{/admin/users/{id}(id=${u.id})}" class="table-link">Manage</a>
+                    <a th:if="${u.email == currentEmail}" th:href="@{/profile}" class="table-link">My profile</a>
                 </td>
             </tr>
             </tbody>
         </table>
     </div>
 
-    <nav th:if="${users.totalPages > 1}" class="pagination" aria-label="Страници">
-        <a th:if="${users.hasPrevious()}" th:href="@{${search.pageUrl(users.number)}}" class="page-link" rel="prev">‹ Предишна</a>
-        <span th:unless="${users.hasPrevious()}" class="page-link disabled" aria-hidden="true">‹ Предишна</span>
+    <nav th:if="${users.totalPages > 1}" class="pagination" aria-label="Pages">
+        <a th:if="${users.hasPrevious()}" th:href="@{${search.pageUrl(users.number)}}" class="page-link" rel="prev">‹ Previous</a>
+        <span th:unless="${users.hasPrevious()}" class="page-link disabled" aria-hidden="true">‹ Previous</span>
         <th:block th:each="p : ${pageItems}">
             <span th:if="${p == 0}" class="page-gap" aria-hidden="true">…</span>
             <span th:if="${p == users.number + 1}" class="page-link current" aria-current="page" th:text="${p}">1</span>
             <a th:if="${p != 0 and p != users.number + 1}" th:href="@{${search.pageUrl(p)}}" class="page-link"
-               th:text="${p}" th:aria-label="'Страница ' + ${p}">2</a>
+               th:text="${p}" th:aria-label="'Page ' + ${p}">2</a>
         </th:block>
-        <a th:if="${users.hasNext()}" th:href="@{${search.pageUrl(users.number + 2)}}" class="page-link" rel="next">Следваща ›</a>
-        <span th:unless="${users.hasNext()}" class="page-link disabled" aria-hidden="true">Следваща ›</span>
+        <a th:if="${users.hasNext()}" th:href="@{${search.pageUrl(users.number + 2)}}" class="page-link" rel="next">Next ›</a>
+        <span th:unless="${users.hasNext()}" class="page-link disabled" aria-hidden="true">Next ›</span>
     </nav>
 </main>
 </body>

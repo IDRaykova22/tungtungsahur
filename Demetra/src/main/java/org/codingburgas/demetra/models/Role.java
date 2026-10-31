@@ -1,11 +1,11 @@
 package org.codingburgas.demetra.models;
 
 public enum Role {
-    STUDENT("Студент"),
-    ORGANIZER("Организатор"),
-    MANAGER("Мениджър"),
+    STUDENT("Student"),
+    ORGANIZER("Organizer"),
+    MANAGER("Manager"),
     /** Manages user accounts; can only be assigned by another administrator. */
-    ADMIN("Администратор");
+    ADMIN("Administrator");
 
     private final String label;
 

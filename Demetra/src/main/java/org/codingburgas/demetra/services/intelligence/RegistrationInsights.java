@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @Component
 public class RegistrationInsights {
-    private static final Locale BG = Locale.forLanguageTag("bg");
+    private static final Locale EN = Locale.US;
 
     private final RegistrationAnalytics analytics;
 
@@ -50,40 +50,40 @@ public class RegistrationInsights {
         PeriodSummary s = facts.summary();
         RegistrationPeriod p = facts.period();
         if (s.count() == 0) {
-            String before = s.previousCount() == 0 ? " Нямаше и в " + p.getPreviousPhrase() + "."
-                    : " За сравнение, в " + p.getPreviousPhrase() + " — " + registrations(s.previousCount()) + ".";
-            return new Insight(Kind.SUMMARY, Tone.NEUTRAL, "Обобщение",
-                    "Няма нови регистрации за " + p.getPhrase() + "." + before);
+            String before = s.previousCount() == 0 ? " There were none in " + p.getPreviousPhrase() + "."
+                    : " For comparison, there were " + registrations(s.previousCount()) + " in " + p.getPreviousPhrase() + ".";
+            return new Insight(Kind.SUMMARY, Tone.NEUTRAL, "Summary",
+                    "There are no new registrations for " + p.getPhrase() + "." + before);
         }
-        String text = capitalize(registrations(s.count())) + " за " + p.getPhrase();
+        String text = capitalize(registrations(s.count())) + " for " + p.getPhrase();
         Tone tone = Tone.NEUTRAL;
         if (s.previousCount() == 0) {
-            text += ", а в " + p.getPreviousPhrase() + " не е имало нито една.";
+            text += ", while there were none in " + p.getPreviousPhrase() + ".";
             tone = Tone.POSITIVE;
         } else if (s.count() == s.previousCount()) {
-            text += " — колкото и в " + p.getPreviousPhrase() + ".";
+            text += " | the same as in " + p.getPreviousPhrase() + ".";
         } else {
             int change = Math.abs(s.getChangePercent());
             boolean more = s.count() > s.previousCount();
-            text += " — с " + change + " % " + (more ? "повече" : "по-малко") + " спрямо " + p.getPreviousPhrase()
+            text += " | " + change + " % " + (more ? "more" : "fewer") + " than " + p.getPreviousPhrase()
                     + " (" + s.previousCount() + ").";
             tone = more ? Tone.POSITIVE : Tone.WARNING;
         }
-        return new Insight(Kind.SUMMARY, tone, "Обобщение", text);
+        return new Insight(Kind.SUMMARY, tone, "Summary", text);
     }
 
     private Insight trend(Facts facts, Trend trend) {
         Direction direction = analytics.classify(trend, facts.history().length);
         String fit = " (R² = " + decimal(trend.r2(), 2) + ")";
         return switch (direction) {
-            case RISING -> new Insight(Kind.TREND, Tone.POSITIVE, "Тенденция",
-                    "Възходяща: с всеки " + facts.unit() + " идват средно с " + decimal(trend.slope(), 1)
-                            + " регистрации повече" + fit + ".");
-            case FALLING -> new Insight(Kind.TREND, Tone.WARNING, "Тенденция",
-                    "Низходяща: с всеки " + facts.unit() + " идват средно с " + decimal(-trend.slope(), 1)
-                            + " регистрации по-малко" + fit + ".");
-            case STABLE -> new Insight(Kind.TREND, Tone.NEUTRAL, "Тенденция",
-                    "Без ясна тенденция: регистрациите се движат около " + decimal(trend.mean(), 1) + " на "
+            case RISING -> new Insight(Kind.TREND, Tone.POSITIVE, "Trend",
+                    "Rising: each " + facts.unit() + " brings about " + decimal(trend.slope(), 1)
+                            + " more registrations on average" + fit + ".");
+            case FALLING -> new Insight(Kind.TREND, Tone.WARNING, "Trend",
+                    "Falling: each " + facts.unit() + " brings about " + decimal(-trend.slope(), 1)
+                            + " fewer registrations on average" + fit + ".");
+            case STABLE -> new Insight(Kind.TREND, Tone.NEUTRAL, "Trend",
+                    "No clear trend: registrations stay around " + decimal(trend.mean(), 1) + " per "
                             + facts.unit() + fit + ".");
         };
     }
@@ -92,8 +92,8 @@ public class RegistrationInsights {
         double[] history = facts.history();
         boolean noData = java.util.Arrays.stream(history).allMatch(v -> v == 0);
         if (noData) {
-            return new Insight(Kind.FORECAST, Tone.NEUTRAL, "Прогноза",
-                    "Недостатъчно данни за прогноза — в историята няма регистрации.");
+            return new Insight(Kind.FORECAST, Tone.NEUTRAL, "Forecast",
+                    "There is not enough data for a forecast | the history contains no registrations.");
         }
         // The history ends one step before the current, incomplete day or month, so the next period starts
         // two steps past its end.
@@ -104,14 +104,14 @@ public class RegistrationInsights {
         }
         Confidence confidence = analytics.confidence(trend, history);
         String when = switch (facts.period()) {
-            case TODAY -> "утре";
-            case WEEK -> "през следващите 7 дни";
-            case MONTH -> "през следващия месец";
-            case YEAR -> "през следващите 12 месеца";
+            case TODAY -> "tomorrow";
+            case WEEK -> "during the next 7 days";
+            case MONTH -> "during the next month";
+            case YEAR -> "during the next 12 months";
         };
-        String model = confidence == Confidence.LOW ? "по средното ниво, тенденцията е ненадеждна" : "линейна регресия";
-        return new Insight(Kind.FORECAST, Tone.NEUTRAL, "Прогноза",
-                "Очакват се около " + registrations(Math.round(total)) + " " + when + " (" + model + ", увереност: "
+        String model = confidence == Confidence.LOW ? "based on the average level, the trend is unreliable" : "linear regression";
+        return new Insight(Kind.FORECAST, Tone.NEUTRAL, "Forecast",
+                "About " + registrations(Math.round(total)) + " are expected " + when + " (" + model + ", confidence: "
                         + confidenceLabel(confidence) + ").");
     }
 
@@ -119,27 +119,27 @@ public class RegistrationInsights {
         if (facts.period() == RegistrationPeriod.TODAY) {
             double mean = RegistrationAnalytics.mean(facts.history());
             if (analytics.isUnusuallyHigh(facts.todayCount(), facts.history())) {
-                return new Insight(Kind.ANOMALY, Tone.WARNING, "Необичайна активност",
-                        "Днес има " + registrations(facts.todayCount()) + " при средно " + decimal(mean, 1)
-                                + " на ден за последните " + facts.history().length + " дни (z = "
+                return new Insight(Kind.ANOMALY, Tone.WARNING, "Unusual activity",
+                        "Today has " + registrations(facts.todayCount()) + " compared with an average of " + decimal(mean, 1)
+                                + " per day over the last " + facts.history().length + " days (z = "
                                 + decimal(analytics.zScore(facts.todayCount(), facts.history()), 1)
-                                + "). Проверете дали не са автоматични регистрации.");
+                                + "). Check whether these could be automated registrations.");
             }
-            return new Insight(Kind.ANOMALY, Tone.NEUTRAL, "Необичайна активност",
-                    "Днешният брой е в обичайните граници (средно " + decimal(mean, 1) + " на ден за последните "
-                            + facts.history().length + " дни).");
+            return new Insight(Kind.ANOMALY, Tone.NEUTRAL, "Unusual activity",
+                    "Today's count is within the usual range (average " + decimal(mean, 1) + " per day over the last "
+                            + facts.history().length + " days).");
         }
         if (facts.anomalies().isEmpty()) {
-            return new Insight(Kind.ANOMALY, Tone.NEUTRAL, "Необичайна активност",
-                    "Няма необичайни пикове — всички стойности са в очакваните граници.");
+            return new Insight(Kind.ANOMALY, Tone.NEUTRAL, "Unusual activity",
+                    "There are no unusual peaks | all values are within the expected range.");
         }
         double mean = RegistrationAnalytics.mean(facts.chartValues());
         String spikes = facts.anomalies().stream()
                 .map(i -> facts.chartLabels().get(i) + " (" + registrations(Math.round(facts.chartValues()[i])) + ")")
                 .collect(Collectors.joining(", "));
-        return new Insight(Kind.ANOMALY, Tone.WARNING, "Необичайна активност",
-                (facts.anomalies().size() == 1 ? "Необичаен пик: " : "Необичайни пикове: ") + spikes
-                        + " при средно " + decimal(mean, 1) + ". Отбелязани са в златисто на графиката.");
+        return new Insight(Kind.ANOMALY, Tone.WARNING, "Unusual activity",
+                (facts.anomalies().size() == 1 ? "Unusual peak: " : "Unusual peaks: ") + spikes
+                        + " compared with an average of " + decimal(mean, 1) + ". They are highlighted in gold on the chart.");
     }
 
     private Insight peak(Facts facts) {
@@ -151,46 +151,46 @@ public class RegistrationInsights {
             }
         }
         String what = switch (facts.period()) {
-            case TODAY -> "Най-активен час";
-            case WEEK, MONTH -> "Най-активен ден";
-            case YEAR -> "Най-активен месец";
+            case TODAY -> "Busiest hour";
+            case WEEK, MONTH -> "Busiest day";
+            case YEAR -> "Busiest month";
         };
-        return new Insight(Kind.PEAK, Tone.NEUTRAL, "Пик",
-                what + ": " + facts.chartLabels().get(best) + " — " + registrations(Math.round(values[best])) + ".");
+        return new Insight(Kind.PEAK, Tone.NEUTRAL, "Peak",
+                what + ": " + facts.chartLabels().get(best) + " | " + registrations(Math.round(values[best])) + ".");
     }
 
     private Insight roles(Facts facts) {
         String text = facts.roles().stream()
                 .filter(share -> share.count() > 0)
-                .map(share -> roleNoun(share.role()) + " — " + share.percent() + " %")
+                .map(share -> roleNoun(share.role()) + " | " + share.percent() + " %")
                 .collect(Collectors.joining(", "));
-        return new Insight(Kind.ROLES, Tone.NEUTRAL, "Роли", capitalize(text) + ".");
+        return new Insight(Kind.ROLES, Tone.NEUTRAL, "Roles", capitalize(text) + ".");
     }
 
     private static String roleNoun(Role role) {
         return switch (role) {
-            case STUDENT -> "студенти";
-            case ORGANIZER -> "организатори";
-            case ADMIN -> "администратори";
-            case MANAGER -> "мениджъри";
+            case STUDENT -> "students";
+            case ORGANIZER -> "organizers";
+            case ADMIN -> "administrators";
+            case MANAGER -> "managers";
         };
     }
 
     private static String confidenceLabel(Confidence confidence) {
         return switch (confidence) {
-            case HIGH -> "висока";
-            case MEDIUM -> "средна";
-            case LOW -> "ниска";
+            case HIGH -> "high";
+            case MEDIUM -> "medium";
+            case LOW -> "low";
         };
     }
 
-    /** "1 регистрация", "5 регистрации". */
+    /** "1 registration", "5 registrations". */
     public static String registrations(long count) {
-        return count + (count == 1 ? " регистрация" : " регистрации");
+        return count + (count == 1 ? " registration" : " registrations");
     }
 
     static String decimal(double value, int digits) {
-        return String.format(BG, "%." + digits + "f", value);
+        return String.format(EN, "%." + digits + "f", value);
     }
 
     private static String capitalize(String text) {

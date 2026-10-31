@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${event.title} + ' — Demetra'">Event — Demetra</title>
+    <title th:text="${event.title} + ' | Demetra'">Event | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -23,10 +23,10 @@
     <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
     <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
     <div class="alert alert-success" th:if="${deletionRequest != null and deletionRequest.status.name() == 'REJECTED'}">
-        Заявката за изтриване е отхвърлена от администратор.
+        The deletion request was rejected by an administrator.
     </div>
     <div class="alert alert-success" th:if="${deletionRequest != null and deletionRequest.status.name() == 'PENDING'}">
-        Заявката за изтриване е в очакване на одобрение.
+        The deletion request is waiting for approval.
     </div>
 
     <div class="event-detail-body">
@@ -35,25 +35,34 @@
                 <h2>About this event</h2>
                 <p class="event-description" th:text="${event.description ?: 'Event details will be announced soon.'}">Description</p>
 
+                <div class="project-chat-callout">
+                    <div class="chat-avatar">D</div>
+                    <div>
+                        <strong>Have a question about the event?</strong>
+                        <span>A manager or the organizer will answer you personally in the chat.</span>
+                    </div>
+                    <a class="btn" th:href="@{/events/{id}/chat(id=${event.id})}">Open chat</a>
+                </div>
+
                 <section class="event-media" th:if="${event.videoPath}">
                     <div class="event-section-heading">
-                        <h3>Видео</h3>
-                        <span>Представяне на събитието</span>
+                        <h3>Video</h3>
+                        <span>Event presentation</span>
                     </div>
                     <video class="event-video" controls preload="metadata">
                         <source th:src="@{/videos/{file}(file=${event.videoPath})}" th:type="${event.videoContentType}">
-                        Вашият браузър не поддържа видео.
+                        Your browser does not support video.
                     </video>
                 </section>
 
                 <section class="event-ad" th:if="${event.advertisingText != null or event.advertisingImageUrl != null}">
                     <div class="event-section-heading">
-                        <h3>Реклама</h3>
-                        <span>Специално съдържание</span>
+                        <h3>Advertising</h3>
+                        <span>Sponsored content</span>
                     </div>
                     <p th:if="${event.advertisingText}" th:text="${event.advertisingText}"></p>
                     <img class="event-ad-image" th:if="${event.advertisingImageUrl}" th:src="${event.advertisingImageUrl}"
-                         alt="Рекламно изображение">
+                         alt="Advertising image">
                 </section>
             </div>
         </div>
@@ -101,12 +110,12 @@
             </div>
 
             <div class="card sidebar-card" sec:authorize="hasAnyRole('MANAGER', 'ADMIN')">
-                <a class="btn" th:href="@{/events/{id}/edit(id=${event.id})}">Редактирай</a>
+                <a class="btn" th:href="@{/events/{id}/edit(id=${event.id})}">Edit event</a>
                 <form sec:authorize="hasRole('MANAGER')" method="post"
                       th:action="@{/events/{id}/deletion-request(id=${event.id})}" style="margin-top:12px;">
-                    <label for="deletionReason">Причина за изтриване</label>
+                    <label for="deletionReason">Reason for deletion</label>
                     <textarea id="deletionReason" name="reason" required maxlength="2000"></textarea>
-                    <button class="btn btn-secondary" type="submit">Поискай изтриване</button>
+                    <button class="btn btn-secondary" type="submit">Request deletion</button>
                 </form>
             </div>
         </aside>

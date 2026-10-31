@@ -143,10 +143,10 @@ public class UserService implements UserDetailsService {
         String validPhone = validPhone(phone);
         validatePassword(rawPassword);
         if (role == null) {
-            throw new IllegalArgumentException("Изберете роля.");
+            throw new IllegalArgumentException("Choose a role.");
         }
         if (userRepository.existsByEmail(normalizedEmail)) {
-            throw new IllegalArgumentException("Вече има потребител с този имейл.");
+            throw new IllegalArgumentException("A user with this email already exists.");
         }
         User user = new User(normalizedEmail, passwordEncoder.encode(rawPassword), validName, role);
         user.setPhone(validPhone);
@@ -160,12 +160,12 @@ public class UserService implements UserDetailsService {
     @Transactional
     public User updateProfile(Long userId, String name, String email, String phone, String actingEmail) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Потребителят не съществува."));
+                .orElseThrow(() -> new IllegalArgumentException("The user does not exist."));
         String normalizedEmail = validEmail(email);
         String validName = validName(name);
         String validPhone = validPhone(phone);
         if (userRepository.existsByEmailAndIdNot(normalizedEmail, user.getId())) {
-            throw new IllegalArgumentException("Вече има потребител с този имейл.");
+            throw new IllegalArgumentException("A user with this email already exists.");
         }
         String previousEmail = user.getEmail();
         user.setName(validName);
@@ -180,9 +180,9 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public User changeRole(Long userId, Role role, String actingEmail) {
-        User user = otherUser(userId, actingEmail, "Не можете да промените собствената си роля.");
+        User user = otherUser(userId, actingEmail, "You cannot change your own role.");
         if (role == null) {
-            throw new IllegalArgumentException("Изберете роля.");
+            throw new IllegalArgumentException("Choose a role.");
         }
         if (user.getRole() != role) {
             user.setRole(role);
@@ -195,7 +195,7 @@ public class UserService implements UserDetailsService {
 
     @Transactional
     public User deactivate(Long userId, String actingEmail) {
-        User user = otherUser(userId, actingEmail, "Не можете да деактивирате собствения си профил.");
+        User user = otherUser(userId, actingEmail, "You cannot deactivate your own account.");
         if (user.isActive()) {
             user.setDeactivatedAt(LocalDateTime.now(clock));
             userRepository.save(user);
@@ -207,7 +207,7 @@ public class UserService implements UserDetailsService {
     @Transactional
     public User activate(Long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Потребителят не съществува."));
+                .orElseThrow(() -> new IllegalArgumentException("The user does not exist."));
         user.setDeactivatedAt(null);
         return userRepository.save(user);
     }
@@ -220,7 +220,7 @@ public class UserService implements UserDetailsService {
     @Transactional
     public User ensureAdministrator(String name, String email, String rawPassword) {
         if (rawPassword == null || rawPassword.isBlank()) {
-            throw new IllegalArgumentException("Паролата на администратора не може да е празна.");
+            throw new IllegalArgumentException("The administrator password cannot be empty.");
         }
         String normalizedEmail = validEmail(email);
         Optional<User> existing = userRepository.findByEmail(normalizedEmail);
@@ -253,9 +253,9 @@ public class UserService implements UserDetailsService {
 
     private User otherUser(Long userId, String actingEmail, String selfMessage) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Потребителят не съществува."));
+                .orElseThrow(() -> new IllegalArgumentException("The user does not exist."));
         if (user.getEmail().equals(actingEmail)) {
-            // Also guarantees that at least one active administrator — the one acting — always remains.
+            // Also guarantees that at least one active administrator, the one acting, always remains.
             throw new IllegalArgumentException(selfMessage);
         }
         return user;
@@ -271,7 +271,7 @@ public class UserService implements UserDetailsService {
     private static String validName(String name) {
         String trimmed = name == null ? "" : name.trim();
         if (trimmed.length() < 2 || trimmed.length() > 80) {
-            throw new IllegalArgumentException("Името трябва да е между 2 и 80 символа.");
+            throw new IllegalArgumentException("The name must be between 2 and 80 characters.");
         }
         return trimmed;
     }
@@ -279,12 +279,12 @@ public class UserService implements UserDetailsService {
     private static String validEmail(String email) {
         String normalized = email == null ? "" : email.trim().toLowerCase();
         if (normalized.length() > 254 || !EMAIL_PATTERN.matcher(normalized).matches()) {
-            throw new IllegalArgumentException("Въведете валиден имейл адрес.");
+            throw new IllegalArgumentException("Enter a valid email address.");
         }
         return normalized;
     }
 
-    /** Optional: blank becomes null. Otherwise 6–15 digits (the international maximum), spaces collapsed. */
+    /** Optional: blank becomes null. Otherwise 6-15 digits (the international maximum), spaces collapsed. */
     private static String validPhone(String phone) {
         String trimmed = phone == null ? "" : phone.trim().replaceAll("\\s+", " ");
         if (trimmed.isEmpty()) {
@@ -292,7 +292,7 @@ public class UserService implements UserDetailsService {
         }
         long digits = trimmed.chars().filter(Character::isDigit).count();
         if (!PHONE_PATTERN.matcher(trimmed).matches() || digits < 6 || digits > 15 || trimmed.length() > 20) {
-            throw new IllegalArgumentException("Въведете валиден телефон: 6 до 15 цифри, по желание с „+“ в началото.");
+            throw new IllegalArgumentException("Enter a valid phone number: 6 to 15 digits, optionally starting with a plus sign.");
         }
         return trimmed;
     }
@@ -300,10 +300,10 @@ public class UserService implements UserDetailsService {
     private static void validatePassword(String password) {
         String value = password == null ? "" : password;
         if (value.length() < 8 || value.length() > 128) {
-            throw new IllegalArgumentException("Паролата трябва да е между 8 и 128 символа.");
+            throw new IllegalArgumentException("The password must be between 8 and 128 characters.");
         }
         if (value.chars().noneMatch(Character::isLowerCase) || value.chars().noneMatch(Character::isUpperCase)) {
-            throw new IllegalArgumentException("Паролата трябва да съдържа поне една малка и една главна буква.");
+            throw new IllegalArgumentException("The password must contain at least one lowercase and one uppercase letter.");
         }
     }
 }

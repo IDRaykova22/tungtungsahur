@@ -78,12 +78,12 @@ public class EventService {
         if (editor == null || (editor.getRole() != org.codingburgas.demetra.models.Role.MANAGER
                 && editor.getRole() != org.codingburgas.demetra.models.Role.ADMIN
                 && (event.getOrganizer() == null || !event.getOrganizer().getId().equals(editor.getId())))) {
-            throw new SecurityException("Нямате право да редактирате това събитие.");
+            throw new SecurityException("You are not allowed to edit this event.");
         }
         if (video != null && !video.isEmpty()
                 && editor.getRole() != org.codingburgas.demetra.models.Role.MANAGER
                 && editor.getRole() != org.codingburgas.demetra.models.Role.ADMIN) {
-            throw new SecurityException("Нямате право да качвате видео.");
+            throw new SecurityException("You are not allowed to upload video.");
         }
         if (video != null && !video.isEmpty()) {
             VideoStorageService.StoredVideo stored = videoStorageService.store(video);
@@ -114,7 +114,7 @@ public class EventService {
     @Transactional
     public Registration register(User user, Event event) {
         if (event.getStatus() != EventStatus.PUBLISHED) {
-            throw new IllegalStateException("Това събитие вече не е активно.");
+            throw new IllegalStateException("This event is no longer active.");
         }
         Optional<Registration> existing = registrationRepository.findByUserAndEvent(user, event);
         if (existing.isPresent() && existing.get().getStatus() != RegistrationStatus.CANCELLED) {

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="bg" xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Отчети — Demetra</title>
+    <title>Reports | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -11,121 +11,122 @@
 <div th:replace="~{fragments/nav :: nav}"></div>
 <main class="page-container">
     <header class="page-header">
-        <div class="breadcrumbs"><a th:href="@{/events}">Demetra / Събития</a> / Отчети</div>
-        <h1>Отчети за събитията</h1>
-        <p class="event-meta">Общ отчет за всички организатори, по дата на създаване на събитието.</p>
+        <div class="breadcrumbs"><a th:href="@{/events}">Demetra / Events</a> / Reports</div>
+        <h1>Event reports</h1>
+        <p class="event-meta">A summary for all organizers, grouped by event creation date.</p>
     </header>
 
     <section class="card report-section" aria-labelledby="filter-heading">
-        <h2 id="filter-heading">Период и групиране</h2>
+        <h2 id="filter-heading">Period and grouping</h2>
         <div class="report-presets">
-            <span class="event-meta">Бърз избор:</span>
+            <span class="event-meta">Quick select:</span>
             <a th:each="p : ${presets}" class="preset-link"
-               th:href="@{/reports(from=${p.from},to=${p.to},groupBy=${filter.groupBy})}" th:text="${p.label}">Този месец</a>
+               th:href="@{/reports(from=${p.from},to=${p.to},groupBy=${filter.groupBy})}" th:text="${p.label}">This month</a>
         </div>
         <form method="get" th:action="@{/reports}" class="event-filter-form">
             <div class="form-group">
-                <label for="from">От дата</label>
+                <label for="from">From date</label>
                 <input type="date" id="from" name="from" th:value="${filter.from}" th:max="${maxDate}" required
                        aria-describedby="period-help">
             </div>
             <div class="form-group">
-                <label for="to">До дата</label>
+                <label for="to">To date</label>
                 <input type="date" id="to" name="to" th:value="${filter.to}" th:max="${maxDate}" required
                        aria-describedby="period-help">
             </div>
             <div class="form-group">
-                <label for="groupBy">Групирай по</label>
+                <label for="groupBy">Group by</label>
                 <select id="groupBy" name="groupBy">
                     <option th:each="g : ${groupings}" th:value="${g.key}" th:text="${g.label}"
-                            th:selected="${g.key == filter.groupBy}">Месец</option>
+                            th:selected="${g.key == filter.groupBy}">Month</option>
                 </select>
             </div>
-            <button type="submit" class="btn">Покажи отчет</button>
-            <a th:href="@{/reports}" class="btn btn-secondary">Текущ месец</a>
+            <button type="submit" class="btn">Show report</button>
+            <a th:href="@{/reports}" class="btn btn-secondary">Current month</a>
         </form>
         <p id="period-help" class="event-meta">
-            Включват се събитията, създадени от началото на „От дата“ до края на „До дата“.
-            Периодът може да е до 2 години, а крайната дата не може да е в бъдещето.
+            Events created from the start of the selected period through its end are included.
+            The period can be up to 2 years, and the end date cannot be in the future.
         </p>
-        <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}">Грешка</div>
+        <div th:if="${error}" class="alert alert-error" role="alert" th:text="${error}">Error</div>
     </section>
 
     <div th:if="${report != null}">
         <section class="report-section" aria-labelledby="summary-heading">
             <div class="report-section-header">
-                <h2 id="summary-heading">Обобщение</h2>
+                <h2 id="summary-heading">Summary</h2>
                 <div class="report-actions">
-                    <a class="btn" th:href="@{/reports/pdf(from=${filter.from},to=${filter.to},groupBy=${filter.groupBy},download=true)}">Изтегли PDF</a>
+                    <a sec:authorize="hasRole('ADMIN')" class="btn btn-secondary" th:href="@{/admin/data-quality}">Data quality</a>
+                    <a class="btn" th:href="@{/reports/pdf(from=${filter.from},to=${filter.to},groupBy=${filter.groupBy},download=true)}">Download PDF</a>
                     <a class="btn btn-secondary" th:href="@{/reports/pdf(from=${filter.from},to=${filter.to},groupBy=${filter.groupBy})}"
-                       target="_blank" rel="noopener">Преглед на PDF</a>
+                       target="_blank" rel="noopener">View PDF</a>
                 </div>
             </div>
             <p class="report-period">
                 <strong th:text="${#temporals.format(report.period.startDate, 'dd.MM.yyyy')}">01.09.2026</strong>
-                – <strong th:text="${#temporals.format(report.period.endDate, 'dd.MM.yyyy')}">30.09.2026</strong>
-                <span class="event-meta" th:text="'· ' + ${report.period.days} + (${report.period.days == 1} ? ' ден' : ' дни')">· 30 дни</span>
+                - <strong th:text="${#temporals.format(report.period.endDate, 'dd.MM.yyyy')}">30.09.2026</strong>
+                <span class="event-meta" th:text="'| ' + ${report.period.days} + (${report.period.days == 1} ? ' day' : ' days')">| 30 days</span>
             </p>
             <p class="event-meta" th:if="${report.todayIncluded}">
-                Периодът включва днешния ден, който още не е приключил. Данните отразяват наличните записи към момента на справката.
+                The period includes today, which is not complete yet. The data reflects records available at report time.
             </p>
             <div class="report-summary">
-                <div class="card"><div class="sidebar-label">Брой събития</div><div class="report-value" th:text="${report.eventCount}">0</div></div>
-                <div class="card"><div class="sidebar-label">Потвърдени записвания</div><div class="report-value" th:text="${report.confirmedCount}">0</div></div>
-                <div class="card"><div class="sidebar-label">Изчислена сума (USD)</div><div class="report-value" th:text="${#numbers.formatDecimal(report.estimatedAmount, 1, 'WHITESPACE', 2, 'COMMA')} + ' $'">0,00 $</div></div>
+                <div class="card"><div class="sidebar-label">Event count</div><div class="report-value" th:text="${report.eventCount}">0</div></div>
+                <div class="card"><div class="sidebar-label">Confirmed registrations</div><div class="report-value" th:text="${report.confirmedCount}">0</div></div>
+                <div class="card"><div class="sidebar-label">Estimated amount (USD)</div><div class="report-value" th:text="${#numbers.formatDecimal(report.estimatedAmount, 1, 'WHITESPACE', 2, 'COMMA')} + ' $'">0.00 $</div></div>
             </div>
             <p class="event-meta">
-                Сумата е цената на всяко събитие × текущия брой потвърдени записвания.
-                Няма регистрирани реални плащания. Изчакващи и отказани записвания не участват.
-                Включват се публикувани и приключили събития; чернови и отменени събития се изключват.
-                Валутата USD следва съществуващите цени в приложението.
+                The amount is each event price multiplied by its current confirmed registrations.
+                No real payments are recorded. Waiting list and rejected registrations are excluded.
+                Published and closed events are included. Draft and cancelled events are excluded.
+                USD follows the existing prices in the application.
             </p>
         </section>
 
         <section th:unless="${#lists.isEmpty(report.groupRows)}" class="card report-section" aria-labelledby="group-heading">
-            <h2 id="group-heading" th:text="'Групиране ' + ${report.grouping.phrase}">Групиране по месеци</h2>
+            <h2 id="group-heading" th:text="'Grouping ' + ${report.grouping.phrase}">Grouping by month</h2>
             <div class="report-table-container">
                 <table class="report-table">
-                    <caption th:if="${report.grouping.name() == 'MONTH'}" class="event-meta">Включени са и месеците без събития.</caption>
-                    <thead><tr><th scope="col" th:text="${report.grouping.label}">Месец</th><th scope="col">Събития</th><th scope="col">Потвърдени записвания</th><th scope="col">Изчислена сума (USD)</th><th scope="col">Дял от сумата</th></tr></thead>
+                    <caption th:if="${report.grouping.name() == 'MONTH'}" class="event-meta">Months without events are included.</caption>
+                    <thead><tr><th scope="col" th:text="${report.grouping.label}">Month</th><th scope="col">Events</th><th scope="col">Confirmed registrations</th><th scope="col">Estimated amount (USD)</th><th scope="col">Share of amount</th></tr></thead>
                     <tbody><tr th:each="row : ${report.groupRows}">
-                        <th scope="row" th:text="${row.label}">Месец</th>
+                        <th scope="row" th:text="${row.label}">Month</th>
                         <td th:text="${row.eventCount}">0</td>
                         <td th:text="${row.confirmedCount}">0</td>
                         <td th:text="${#numbers.formatDecimal(row.estimatedAmount, 1, 'WHITESPACE', 2, 'COMMA')} + ' $'">0,00 $</td>
                         <td>
                             <div class="share">
                                 <span class="share-bar"><span th:style="'width:' + ${report.sharePercent(row)} + '%'"></span></span>
-                                <span th:text="${report.estimatedAmount.signum() == 0} ? '—' : ${report.sharePercent(row)} + ' %'">0 %</span>
+                                <span th:text="${report.estimatedAmount.signum() == 0} ? '-' : ${report.sharePercent(row)} + ' %'">0 %</span>
                             </div>
                         </td>
                     </tr></tbody>
                     <tfoot><tr>
-                        <th scope="row">Общо</th>
+                        <th scope="row">Total</th>
                         <td th:text="${report.eventCount}">0</td>
                         <td th:text="${report.confirmedCount}">0</td>
                         <td th:text="${#numbers.formatDecimal(report.estimatedAmount, 1, 'WHITESPACE', 2, 'COMMA')} + ' $'">0,00 $</td>
-                        <td th:text="${report.estimatedAmount.signum() == 0} ? '—' : '100 %'">100 %</td>
+                        <td th:text="${report.estimatedAmount.signum() == 0} ? '-' : '100 %'">100 %</td>
                     </tr></tfoot>
                 </table>
             </div>
         </section>
 
         <div th:if="${#lists.isEmpty(report.events)}" class="card no-events report-section">
-            Няма публикувани или приключили събития, създадени през избрания период.
+            No published or closed events were created during the selected period.
         </div>
 
         <section th:unless="${#lists.isEmpty(report.events)}" class="card report-section" aria-labelledby="events-heading">
-            <h2 id="events-heading">Включени събития</h2>
+            <h2 id="events-heading">Included events</h2>
             <div class="report-table-container">
                 <table class="report-table report-events-table">
-                    <thead><tr><th scope="col">Събитие</th><th scope="col">Категория</th><th scope="col">Статус</th><th scope="col">Създадено на</th><th scope="col">Провеждане</th><th scope="col">Цена (USD)</th><th scope="col">Потвърдени</th><th scope="col">Изчислена сума (USD)</th></tr></thead>
+                    <thead><tr><th scope="col">Event</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col">Created on</th><th scope="col">Event date</th><th scope="col">Price (USD)</th><th scope="col">Confirmed</th><th scope="col">Estimated amount (USD)</th></tr></thead>
                     <tbody><tr th:each="row : ${report.events}">
-                        <th scope="row"><a th:href="@{/events/{id}(id=${row.id})}" th:text="${row.title}">Събитие</a></th>
-                        <td th:text="${row.category}">Категория</td>
-                        <td th:text="${row.statusLabel}">Публикувано</td>
-                        <td th:text="${#temporals.format(row.createdAt, 'dd.MM.yyyy HH:mm')}">Дата</td>
-                        <td th:text="${row.startsAt != null ? #temporals.format(row.startsAt, 'dd.MM.yyyy HH:mm') : 'Не е определено'}">Дата</td>
+                        <th scope="row"><a th:href="@{/events/{id}(id=${row.id})}" th:text="${row.title}">Event</a></th>
+                        <td th:text="${row.category}">Category</td>
+                        <td th:text="${row.statusLabel}">Published</td>
+                        <td th:text="${#temporals.format(row.createdAt, 'dd.MM.yyyy HH:mm')}">Date</td>
+                        <td th:text="${row.startsAt != null ? #temporals.format(row.startsAt, 'dd.MM.yyyy HH:mm') : 'Not specified'}">Date</td>
                         <td th:text="${#numbers.formatDecimal(row.price, 1, 'WHITESPACE', 2, 'COMMA')} + ' $'">0,00 $</td>
                         <td th:text="${row.confirmedCount}">0</td>
                         <td th:text="${#numbers.formatDecimal(row.estimatedAmount, 1, 'WHITESPACE', 2, 'COMMA')} + ' $'">0,00 $</td>

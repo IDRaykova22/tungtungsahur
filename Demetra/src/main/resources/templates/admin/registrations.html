@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Нови регистрации — Администрация — Demetra</title>
+    <title>New registrations | Administration | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -13,26 +13,26 @@
 <main class="page-container dash">
     <header class="dash-hero">
         <div>
-            <div class="dash-crumbs"><a th:href="@{/admin/users}">Администрация</a> / Нови регистрации</div>
-            <h1>Нови регистрации</h1>
+            <div class="dash-crumbs"><a th:href="@{/admin/users}">Administration</a> / New registrations</div>
+            <h1>New registrations</h1>
             <p class="dash-range">
-                <span th:text="${dashboard.period.label}">Днес</span> ·
+                <span th:text="${dashboard.period.label}">Today</span> |
                 <span th:if="${dashboard.startDate != dashboard.endDate}"
-                      th:text="${#temporals.format(dashboard.startDate, 'dd.MM.yyyy')} + ' – '">01.10.2026 –</span>
+                      th:text="${#temporals.format(dashboard.startDate, 'dd.MM.yyyy')} + ' - '">01.10.2026 -</span>
                 <span th:text="${#temporals.format(dashboard.endDate, 'dd.MM.yyyy')}">12.10.2026</span>
             </p>
         </div>
-        <a th:href="@{/admin/users}" class="btn dash-hero-btn">Всички потребители</a>
+        <a th:href="@{/admin/users}" class="btn dash-hero-btn">All users</a>
     </header>
 
-    <nav class="kpi-grid" aria-label="Период">
+    <nav class="kpi-grid" aria-label="Period">
         <a th:each="s : ${dashboard.summaries}" th:href="@{/admin/registrations(period=${s.period.key})}"
            class="kpi-card" th:classappend="${s.period == dashboard.period} ? 'active'"
            th:attr="aria-current=${s.period == dashboard.period} ? 'page' : null">
-            <span class="kpi-label" th:text="${s.period.label}">Днес</span>
+            <span class="kpi-label" th:text="${s.period.label}">Today</span>
             <span class="kpi-value" th:text="${s.count}">0</span>
             <span class="kpi-delta" th:classappend="${s.trendClass}" th:text="${s.deltaLabel}">▲ 50 %</span>
-            <span class="kpi-sub">спрямо <span th:text="${s.period.previousPhrase}">предходния ден</span>:
+            <span class="kpi-sub">compared with <span th:text="${s.period.previousPhrase}">the previous day</span>:
                 <b th:text="${s.previousCount}">0</b></span>
         </a>
     </nav>
@@ -40,40 +40,40 @@
     <div class="dash-grid">
         <section class="card chart-card" aria-labelledby="chart-heading">
             <div class="card-head">
-                <h2 id="chart-heading" th:text="${dashboard.chartTitle}">Регистрации по дни</h2>
+                <h2 id="chart-heading" th:text="${dashboard.chartTitle}">Registrations by day</h2>
                 <ul class="chart-legend">
-                    <li><i class="swatch swatch-bar"></i>Регистрации</li>
-                    <li th:if="${dashboard.hasAnomaly}"><i class="swatch swatch-anomaly"></i>Необичаен пик</li>
-                    <li th:if="${dashboard.hasForecast}"><i class="swatch swatch-forecast"></i>Прогноза</li>
+                    <li><i class="swatch swatch-bar"></i>Registrations</li>
+                    <li th:if="${dashboard.hasAnomaly}"><i class="swatch swatch-anomaly"></i>Unusual peak</li>
+                    <li th:if="${dashboard.hasForecast}"><i class="swatch swatch-forecast"></i>Forecast</li>
                 </ul>
             </div>
             <div class="bar-chart" role="img"
-                 th:attr="aria-label=${dashboard.chartTitle + ': общо ' + dashboard.selected.count + ' за ' + dashboard.period.phrase}"
+                 th:attr="aria-label=${dashboard.chartTitle + ': total ' + dashboard.selected.count + ' for ' + dashboard.period.phrase}"
                  th:classappend="${#lists.size(dashboard.bars) > 14} ? 'dense'">
                 <div class="bar-col" th:each="bar : ${dashboard.bars}" th:title="${bar.tooltip}"
                      th:classappend="${bar.anomaly} ? 'anomaly' : (${bar.forecast} ? 'forecast' : '')">
                     <span class="bar-value"
                           th:text="${bar.value > 0 and (#lists.size(dashboard.bars) <= 14 or bar.anomaly or bar.forecast)} ? ${bar.displayValue} : ''">3</span>
                     <div class="bar-track"><div class="bar" th:style="'height:' + ${bar.heightPercent} + '%'"></div></div>
-                    <span class="bar-label" th:text="${bar.showLabel} ? ${bar.label} : ''">пн</span>
+                    <span class="bar-label" th:text="${bar.showLabel} ? ${bar.label} : ''">Mon</span>
                 </div>
             </div>
             <p th:if="${dashboard.selected.count == 0}" class="chart-empty"
-               th:text="'Няма регистрации за ' + ${dashboard.period.phrase} + '.'">Няма регистрации за днес.</p>
+               th:text="'No registrations for ' + ${dashboard.period.phrase} + '.'">No registrations for today.</p>
         </section>
 
         <section class="card roles-card" aria-labelledby="roles-heading">
-            <h2 id="roles-heading">По роли</h2>
+            <h2 id="roles-heading">By role</h2>
             <div class="donut" th:style="'background:' + ${dashboard.donutGradient}">
                 <div class="donut-hole">
                     <strong th:text="${dashboard.selected.count}">0</strong>
-                    <span th:text="${dashboard.selected.count == 1} ? 'потребител' : 'потребители'">потребители</span>
+                    <span th:text="${dashboard.selected.count == 1} ? 'user' : 'users'">users</span>
                 </div>
             </div>
             <ul class="role-legend">
                 <li th:each="share : ${dashboard.roleShares}">
                     <i class="swatch" th:classappend="'swatch-' + ${share.cssClass}"></i>
-                    <span th:text="${share.role.label}">Студент</span>
+                    <span th:text="${share.role.label}">Student</span>
                     <b th:text="${share.count}">0</b>
                     <span class="role-percent" th:text="${share.percent} + ' %'">0 %</span>
                 </li>
@@ -83,8 +83,8 @@
 
     <section class="card insights-card" aria-labelledby="insights-heading">
         <div class="card-head">
-            <h2 id="insights-heading">Интелигентен анализ</h2>
-            <span class="insights-note">Линейна регресия, прогноза и откриване на аномалии (z-score)</span>
+            <h2 id="insights-heading">Intelligent analysis</h2>
+            <span class="insights-note">Linear regression, forecasting and anomaly detection (z-score)</span>
         </div>
         <ul class="insight-list">
             <li th:each="insight : ${dashboard.insights}" class="insight" th:classappend="${insight.toneClass}">
@@ -97,8 +97,8 @@
                     <th:block th:case="'ROLES'">◐</th:block>
                 </span>
                 <div>
-                    <h3 th:text="${insight.title}">Обобщение</h3>
-                    <p th:text="${insight.text}">Текст</p>
+                    <h3 th:text="${insight.title}">Summary</h3>
+                    <p th:text="${insight.text}">Text</p>
                 </div>
             </li>
         </ul>
@@ -106,36 +106,36 @@
 
     <section class="card" aria-labelledby="users-heading">
         <div class="card-head">
-            <h2 id="users-heading">Нови потребители</h2>
+            <h2 id="users-heading">New users</h2>
             <span class="insights-note" th:if="${users.totalElements > 0}"
-                  th:text="'Показани ' + ${users.number * users.size + 1} + '–' + ${users.number * users.size + users.numberOfElements} + ' от ' + ${users.totalElements}">Показани 1–12 от 40</span>
+                  th:text="'Showing ' + ${users.number * users.size + 1} + ' to ' + ${users.number * users.size + users.numberOfElements} + ' of ' + ${users.totalElements}">Showing 1 to 12 of 40</span>
         </div>
         <p th:if="${users.totalElements == 0}" class="chart-empty"
-           th:text="'Няма нови потребители за ' + ${dashboard.period.phrase} + '.'">Няма нови потребители за днес.</p>
+           th:text="'No new users for ' + ${dashboard.period.phrase} + '.'">No new users for today.</p>
         <div class="users-table-container" th:unless="${users.totalElements == 0}">
             <table class="users-table">
                 <thead>
-                <tr><th scope="col">Име</th><th scope="col">Имейл</th><th scope="col">Роля</th>
-                    <th scope="col">Регистриран на</th><th scope="col">Статус</th><th scope="col" aria-label="Действия"></th></tr>
+                <tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th>
+                    <th scope="col">Registered on</th><th scope="col">Status</th><th scope="col" aria-label="Actions"></th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="u : ${users.content}" th:classappend="${u.active} ? '' : 'row-inactive'">
-                    <td th:text="${u.name}">Име</td>
+                    <td th:text="${u.name}">Name</td>
                     <td th:text="${u.email}">email</td>
-                    <td><span class="badge badge-role" th:text="${u.role.label}">Студент</span></td>
+                    <td><span class="badge badge-role" th:text="${u.role.label}">Student</span></td>
                     <td th:text="${#temporals.format(u.createdAt, 'dd.MM.yyyy HH:mm')}">12.10.2026 10:00</td>
                     <td>
-                        <span th:if="${u.active}" class="badge badge-open">Активен</span>
-                        <span th:unless="${u.active}" class="badge badge-full">Деактивиран</span>
+                        <span th:if="${u.active}" class="badge badge-open">Active</span>
+                        <span th:unless="${u.active}" class="badge badge-full">Inactive</span>
                     </td>
-                    <td><a th:href="@{/admin/users/{id}(id=${u.id})}" class="table-link">Управление</a></td>
+                    <td><a th:href="@{/admin/users/{id}(id=${u.id})}" class="table-link">Manage</a></td>
                 </tr>
                 </tbody>
             </table>
         </div>
-        <nav th:if="${users.totalPages > 1}" class="pagination" aria-label="Страници">
+        <nav th:if="${users.totalPages > 1}" class="pagination" aria-label="Pages">
             <a th:if="${users.hasPrevious()}" th:href="@{/admin/registrations(period=${dashboard.period.key},page=${users.number})}"
-               class="page-link" rel="prev">‹ Предишна</a>
+               class="page-link" rel="prev">‹ Previous</a>
             <th:block th:each="p : ${pageItems}">
                 <span th:if="${p == 0}" class="page-gap" aria-hidden="true">…</span>
                 <span th:if="${p == users.number + 1}" class="page-link current" aria-current="page" th:text="${p}">1</span>
@@ -143,7 +143,7 @@
                    th:href="@{/admin/registrations(period=${dashboard.period.key},page=${p})}">2</a>
             </th:block>
             <a th:if="${users.hasNext()}" th:href="@{/admin/registrations(period=${dashboard.period.key},page=${users.number + 2})}"
-               class="page-link" rel="next">Следваща ›</a>
+               class="page-link" rel="next">Next ›</a>
         </nav>
     </section>
 </main>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title th:text="${user.name} + ' — Администрация — Demetra'">Потребител — Demetra</title>
+    <title th:text="${user.name} + ' | Administration | Demetra'">User | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -12,13 +12,13 @@
 
 <main class="page-container admin-page">
     <header class="page-header">
-        <div class="breadcrumbs"><a th:href="@{/admin/users}">Администрация / Потребители</a> / <span th:text="${user.name}">Име</span></div>
-        <h1 th:text="${user.name}">Име</h1>
+        <div class="breadcrumbs"><a th:href="@{/admin/users}">Administration / Users</a> / <span th:text="${user.name}">Name</span></div>
+        <h1 th:text="${user.name}">Name</h1>
         <p class="event-meta">
-            <span class="badge badge-role" th:text="${user.role.label}">Роля</span>
-            <span th:if="${user.active}" class="badge badge-open">Активен</span>
-            <span th:unless="${user.active}" class="badge badge-full">Деактивиран</span>
-            · Регистриран на <span th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026</span>
+            <span class="badge badge-role" th:text="${user.role.label}">Role</span>
+            <span th:if="${user.active}" class="badge badge-open">Active</span>
+            <span th:unless="${user.active}" class="badge badge-full">Inactive</span>
+            | Registered on <span th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy HH:mm')}">01.01.2026</span>
         </p>
     </header>
 
@@ -26,47 +26,47 @@
     <div class="alert alert-error" th:if="${error}" th:text="${error}" role="alert"></div>
 
     <section class="card report-section" aria-labelledby="profile-heading">
-        <h2 id="profile-heading">Профил</h2>
+        <h2 id="profile-heading">Profile</h2>
         <form method="post" th:action="@{/admin/users/{id}/profile(id=${user.id})}" th:object="${profileForm}">
             <th:block th:replace="~{fragments/user-fields :: profile}"></th:block>
-            <button type="submit" class="btn">Запази профила</button>
+            <button type="submit" class="btn">Save profile</button>
         </form>
     </section>
 
     <section class="card report-section" aria-labelledby="role-heading">
-        <h2 id="role-heading">Роля</h2>
+        <h2 id="role-heading">Role</h2>
         <form method="post" th:action="@{/admin/users/{id}/role(id=${user.id})}" class="event-filter-form">
             <div class="form-group">
-                <label for="role">Роля в системата</label>
+                <label for="role">System role</label>
                 <select id="role" name="role">
                     <option th:each="r : ${roles}" th:value="${r.name()}" th:text="${r.label}"
-                            th:selected="${r == user.role}">Роля</option>
+                            th:selected="${r == user.role}">Role</option>
                 </select>
             </div>
-            <button type="submit" class="btn">Смени ролята</button>
+            <button type="submit" class="btn">Change role</button>
         </form>
-        <p class="event-meta">Потребителят излиза от системата и новата роля важи от следващото влизане.</p>
+        <p class="event-meta">The user will be signed out and the new role will apply at the next sign in.</p>
     </section>
 
     <section class="card report-section" aria-labelledby="status-heading">
-        <h2 id="status-heading">Активност</h2>
+        <h2 id="status-heading">Account activity</h2>
         <div th:if="${user.active}">
             <p class="event-meta">
-                Деактивирането не изтрива данните: събитията и записванията остават, но потребителят не може да влиза
-                и не се показва в публичния списък. Профилът може да бъде активиран отново.
+                Deactivation does not delete data. Events and registrations remain, but the user cannot sign in
+                and is hidden from the public list. The account can be activated again.
             </p>
             <form method="post" th:action="@{/admin/users/{id}/deactivate(id=${user.id})}"
-                  onsubmit="return confirm('Да се деактивира ли този профил?');">
-                <button type="submit" class="btn btn-danger">Деактивирай профила</button>
+                  onsubmit="return confirm('Deactivate this account?');">
+                <button type="submit" class="btn btn-danger">Deactivate account</button>
             </form>
         </div>
         <div th:unless="${user.active}">
             <p class="event-meta">
-                Деактивиран на <strong th:text="${#temporals.format(user.deactivatedAt, 'dd.MM.yyyy HH:mm')}">дата</strong>.
-                Потребителят не може да влиза в системата.
+                Deactivated on <strong th:text="${#temporals.format(user.deactivatedAt, 'dd.MM.yyyy HH:mm')}">date</strong>.
+                The user cannot sign in.
             </p>
             <form method="post" th:action="@{/admin/users/{id}/activate(id=${user.id})}">
-                <button type="submit" class="btn">Активирай отново</button>
+                <button type="submit" class="btn">Reactivate account</button>
             </form>
         </div>
     </section>

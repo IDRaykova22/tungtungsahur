@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Events — Demetra</title>
+    <title>Events | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -14,7 +14,7 @@
     <div class="page-header">
         <div class="breadcrumbs">Demetra / Events</div>
         <h1>Musical Events</h1>
-        <a sec:authorize="hasRole('ORGANIZER')" th:href="@{/reports}" class="btn report-entry">Отчети за събитията</a>
+        <a sec:authorize="hasRole('ORGANIZER')" th:href="@{/reports}" class="btn report-entry">Event reports</a>
     </div>
 
     <form method="get" th:action="@{/events}" class="event-filter-form">
@@ -26,11 +26,11 @@
             <label for="week">Creation week</label>
             <select id="week" name="week">
                 <option value="0" th:selected="${week == 0}">All weeks</option>
-                <option value="1" th:selected="${week == 1}">Week 1 (days 1–7)</option>
-                <option value="2" th:selected="${week == 2}">Week 2 (days 8–14)</option>
-                <option value="3" th:selected="${week == 3}">Week 3 (days 15–21)</option>
-                <option value="4" th:selected="${week == 4}">Week 4 (days 22–28)</option>
-                <option value="5" th:selected="${week == 5}">Week 5 (days 29–end)</option>
+                <option value="1" th:selected="${week == 1}">Week 1 (days 1-7)</option>
+                <option value="2" th:selected="${week == 2}">Week 2 (days 8-14)</option>
+                <option value="3" th:selected="${week == 3}">Week 3 (days 15-21)</option>
+                <option value="4" th:selected="${week == 4}">Week 4 (days 22-28)</option>
+                <option value="5" th:selected="${week == 5}">Week 5 (days 29-end)</option>
             </select>
         </div>
         <button type="submit" class="btn">Filter events</button>

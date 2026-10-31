@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Моят профил — Demetra</title>
+    <title>My profile | Demetra</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <link rel="icon" th:href="@{/images/favicon.svg}">
 </head>
@@ -12,11 +12,11 @@
 
 <main class="page-container admin-page">
     <header class="page-header">
-        <div class="breadcrumbs"><a th:href="@{/events}">Demetra</a> / Моят профил</div>
-        <h1>Моят профил</h1>
+        <div class="breadcrumbs"><a th:href="@{/events}">Demetra</a> / My profile</div>
+        <h1>My profile</h1>
         <p class="event-meta">
-            Роля: <span class="badge badge-role" th:text="${user.role.label}">Студент</span>
-            · Регистриран на <span th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}">01.01.2026</span>
+            Role: <span class="badge badge-role" th:text="${user.role.label}">Student</span>
+            | Registered on <span th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}">01.01.2026</span>
         </p>
     </header>
 
@@ -24,15 +24,15 @@
     <div class="alert alert-error" th:if="${error}" th:text="${error}" role="alert"></div>
 
     <section class="card">
-        <h2>Лични данни</h2>
+        <h2>Personal details</h2>
         <form method="post" th:action="@{/profile}" th:object="${profileForm}">
             <th:block th:replace="~{fragments/user-fields :: profile}"></th:block>
-            <p class="event-meta">Ако смените имейла, следващия път влизате с новия.</p>
-            <button type="submit" class="btn">Запази промените</button>
+            <p class="event-meta">If you change your email, use the new address the next time you sign in.</p>
+            <button type="submit" class="btn">Save changes</button>
         </form>
     </section>
 
-    <p class="event-meta">Ролята и активността на профила се управляват от администратор.</p>
+    <p class="event-meta">Your role and account activity are managed by an administrator.</p>
 </main>
 </body>
 </html>

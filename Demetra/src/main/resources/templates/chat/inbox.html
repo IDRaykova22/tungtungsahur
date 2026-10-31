@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>My questions | Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main class="page-container chat-inbox-page">
+    <div class="page-header">
+        <div class="breadcrumbs">Demetra / Chat</div>
+        <h1 th:if="${!isResponder}">My questions</h1>
+        <h1 th:if="${isOrganizer}">Questions about my events</h1>
+        <h1 th:if="${isManager}">Questions about events</h1>
+        <p class="inbox-intro" th:if="${!isResponder}">Here you can see the questions you have asked and their replies.</p>
+        <p class="inbox-intro" th:if="${isOrganizer}">Here are all questions about events you created. Open a chat to reply.</p>
+        <p class="inbox-intro" th:if="${isManager}">Here are questions from users about all events.</p>
+    </div>
+
+    <div class="chat-inbox-empty card" th:if="${questions.isEmpty()}">
+        <div class="chat-empty-icon">💬</div>
+        <h2 th:if="${!isResponder}">You have not asked any questions yet</h2>
+        <h2 th:if="${isResponder}">No questions to show</h2>
+        <p>Activity will appear here when it starts.</p>
+        <a class="btn" th:href="@{/events}">Browse events</a>
+    </div>
+
+    <div class="chat-inbox-list" th:unless="${questions.isEmpty()}">
+        <article class="inbox-question card" th:each="item : ${questions}">
+            <div class="inbox-question-top">
+                <div>
+                    <div class="inbox-event-label">Event</div>
+                    <h2 th:text="${item.event.title}">Event name</h2>
+                </div>
+                <span class="badge badge-answered" th:if="${item.answer != null}">Answered</span>
+                <span class="badge badge-pending" th:if="${item.answer == null}">Waiting for reply</span>
+            </div>
+            <div class="inbox-message inbox-message-question">
+                <div class="inbox-message-meta"><strong th:text="${item.askedBy.name}">User</strong><span th:text="${#temporals.format(item.createdAt, 'dd.MM.yyyy HH:mm')}">date</span></div>
+                <p th:text="${item.question}">Question</p>
+            </div>
+            <div class="inbox-message inbox-message-answer" th:if="${item.answer != null}">
+                <div class="inbox-message-meta"><strong th:text="${item.answeredBy.name}">Responder</strong><span class="manager-label" th:if="${item.answeredBy.role.name() == 'MANAGER' or item.answeredBy.role.name() == 'ADMIN'}">Team</span><span th:text="${#temporals.format(item.answeredAt, 'dd.MM.yyyy HH:mm')}">date</span></div>
+                <p th:text="${item.answer}">Reply</p>
+            </div>
+            <div class="inbox-question-footer">
+                <span class="inbox-waiting" th:if="${item.answer == null and !isResponder}">Your question was sent. You will receive a reply in the chat.</span>
+                <span class="inbox-waiting" th:if="${item.answer == null and isResponder}">This question is waiting for your reply.</span>
+                <a class="btn btn-secondary" th:href="@{/events/{id}/chat(id=${item.event.id})}" th:text="${item.answer == null and isResponder} ? 'Open and reply' : 'Open chat'">Open chat</a>
+            </div>
+        </article>
+    </div>
+</main>
+</body>
+</html>

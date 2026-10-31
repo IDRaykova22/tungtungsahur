@@ -40,7 +40,7 @@ public class AdminEventDeletionController {
         try {
             if (approve) service.approve(id, principal.getUser());
             else service.reject(id, principal.getUser());
-            redirect.addFlashAttribute("message", approve ? "Заявката е одобрена." : "Заявката е отхвърлена.");
+            redirect.addFlashAttribute("message", approve ? "The request was approved." : "The request was rejected.");
         } catch (IllegalArgumentException | IllegalStateException | SecurityException ex) {
             redirect.addFlashAttribute("error", ex.getMessage());
         }

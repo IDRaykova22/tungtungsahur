@@ -11,11 +11,11 @@ public record PeriodSummary(RegistrationPeriod period, long count, long previous
         return (int) Math.round((count - previousCount) * 100.0 / previousCount);
     }
 
-    /** Badge text: "▲ 50 %", "▼ 20 %", "= 0 %", "ново" (nothing before) or "—" (nothing at all). */
+    /** Badge text: "▲ 50 %", "▼ 20 %", "= 0 %", "new" (nothing before) or "-" (nothing at all). */
     public String getDeltaLabel() {
         Integer change = getChangePercent();
         if (change == null) {
-            return count > 0 ? "ново" : "—";
+            return count > 0 ? "new" : "-";
         }
         if (change == 0) {
             return "= 0 %";

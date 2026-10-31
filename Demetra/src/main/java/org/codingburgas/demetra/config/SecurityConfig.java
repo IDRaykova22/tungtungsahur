@@ -24,7 +24,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/register", "/login", "/users", "/css/**", "/images/**", "/favicon.ico", "/videos/**").permitAll()
                         .requestMatchers("/events/new").hasRole("ORGANIZER")
                         .requestMatchers("/events/*/edit").hasAnyRole("ORGANIZER", "MANAGER", "ADMIN")
-                        .requestMatchers("/reports", "/reports/**").hasRole("ORGANIZER")
+                        .requestMatchers("/reports", "/reports/**").hasAnyRole("ORGANIZER", "MANAGER", "ADMIN")
                         .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/manager", "/manager/**").hasRole("MANAGER")
                         .requestMatchers("/events/*/deletion-request").hasRole("MANAGER")

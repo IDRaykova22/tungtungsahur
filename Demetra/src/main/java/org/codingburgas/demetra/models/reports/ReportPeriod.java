@@ -22,16 +22,16 @@ public final class ReportPeriod {
 
     public static ReportPeriod between(LocalDate from, LocalDate to, LocalDate today) {
         if (from == null || to == null) {
-            throw new IllegalArgumentException("Изберете начална и крайна дата.");
+            throw new IllegalArgumentException("Choose a start date and an end date.");
         }
         if (to.isAfter(today)) {
-            throw new IllegalArgumentException("Крайната дата не може да е в бъдещето.");
+            throw new IllegalArgumentException("The end date cannot be in the future.");
         }
         if (from.isAfter(to)) {
-            throw new IllegalArgumentException("Началната дата трябва да е преди крайната или същата.");
+            throw new IllegalArgumentException("The start date must be before or equal to the end date.");
         }
         if (ChronoUnit.DAYS.between(from, to) + 1 > MAX_DAYS) {
-            throw new IllegalArgumentException("Периодът може да е най-много 2 години (" + MAX_DAYS + " дни).");
+            throw new IllegalArgumentException("The period can be at most 2 years (" + MAX_DAYS + " days).");
         }
         return new ReportPeriod(from, to);
     }

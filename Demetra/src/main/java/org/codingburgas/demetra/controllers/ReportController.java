@@ -48,7 +48,7 @@ public class ReportController {
         model.addAttribute("presets", presets(today));
         if (bindingResult.hasErrors()) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            model.addAttribute("error", "Въведете валидни дати във формат ГГГГ-ММ-ДД.");
+            model.addAttribute("error", "Enter valid dates in YYYY-MM-DD format.");
             return "reports/index";
         }
         ReportGrouping grouping = applyDefaults(filter, today);
@@ -102,10 +102,10 @@ public class ReportController {
     private static List<Preset> presets(LocalDate today) {
         LocalDate lastYear = today.minusYears(1);
         return List.of(
-                new Preset("Този месец", today.withDayOfMonth(1), today),
-                new Preset("Последните 30 дни", today.minusDays(29), today),
-                new Preset("Тази година", today.withDayOfYear(1), today),
-                new Preset("Миналата година", lastYear.withDayOfYear(1), lastYear.withDayOfYear(lastYear.lengthOfYear())));
+                new Preset("This month", today.withDayOfMonth(1), today),
+                new Preset("Last 30 days", today.minusDays(29), today),
+                new Preset("This year", today.withDayOfYear(1), today),
+                new Preset("Last year", lastYear.withDayOfYear(1), lastYear.withDayOfYear(lastYear.lengthOfYear())));
     }
 
     /** Invalid filters: the HTML report page already explains the error, so send the same parameters there. */

@@ -147,7 +147,7 @@ public class EventController {
             redirectAttributes.addFlashAttribute("message",
                     registration.getStatus() == org.codingburgas.demetra.models.RegistrationStatus.CONFIRMED
                             ? "You're registered for this event."
-                            : "This event is full — you've been added to the waitlist.");
+                            : "This event is full. You have been added to the waitlist.");
         } catch (IllegalStateException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
         }
@@ -298,7 +298,7 @@ public class EventController {
         if (event == null) return "redirect:/events";
         try {
             deletionRequestService.request(event, principal.getUser(), form.getReason());
-            redirectAttributes.addFlashAttribute("message", "Заявката е изпратена към администратор");
+            redirectAttributes.addFlashAttribute("message", "The request was sent to an administrator.");
         } catch (IllegalArgumentException | IllegalStateException | SecurityException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
         }

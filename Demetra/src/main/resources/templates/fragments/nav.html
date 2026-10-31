@@ -8,16 +8,18 @@
     </a>
     <nav class="nav-links">
         <a href="/events">Events</a>
+        <a sec:authorize="isAuthenticated()" th:href="@{/chat}">My questions</a>
         <a th:href="@{/users}">Users</a>
         <span sec:authorize="hasRole('ORGANIZER')">
             <a href="/events/new">Host an event</a>
         </span>
-        <a sec:authorize="hasRole('ORGANIZER')" th:href="@{/reports}" class="nav-cta">Отчети</a>
-        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/registrations}">Регистрации</a>
-        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/event-deletion-requests}">Заявки за изтриване</a>
-        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/users}" class="nav-cta">Администрация</a>
+        <a sec:authorize="hasAnyRole('ORGANIZER', 'MANAGER', 'ADMIN')" th:href="@{/reports}" class="nav-cta">Reports</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/registrations}">Registrations</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/event-deletion-requests}">Deletion requests</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/data-quality}">Data quality</a>
+        <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin/users}" class="nav-cta">Administration</a>
         <span sec:authorize="isAuthenticated()" class="nav-user">
-            <a th:href="@{/profile}" title="Моят профил"><span sec:authentication="name">user@example.com</span></a>
+            <a th:href="@{/profile}" title="My profile"><span sec:authentication="name">user@example.com</span></a>
             <form method="post" th:action="@{/logout}" class="inline-form">
                 <button type="submit" class="link-button">Sign out</button>
             </form>

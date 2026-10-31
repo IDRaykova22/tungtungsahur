@@ -56,7 +56,7 @@ public class ProfileController {
             return "users/profile";
         }
         refreshAuthentication(updated, authentication, request, response);
-        redirect.addFlashAttribute("message", "Профилът е обновен.");
+        redirect.addFlashAttribute("message", "The profile was updated.");
         return "redirect:/profile";
     }
 

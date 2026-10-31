@@ -3,7 +3,7 @@ package org.codingburgas.demetra.models.stats;
 /**
  * One column of the registrations chart.
  *
- * @param heightPercent height relative to the tallest column (0–100)
+ * @param heightPercent height relative to the tallest column (0-100)
  * @param anomaly       flagged by the analysis as an unusual spike
  * @param forecast      a predicted, not an actual, value
  * @param showLabel     whether the axis label is printed (dense charts show every few labels)

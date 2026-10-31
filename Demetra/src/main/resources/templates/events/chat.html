@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Chat for ' + ${event.title} + ' | Demetra'">Event chat | Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+
+<main class="page-container chat-page" th:attr="data-event-id=${event.id},data-is-responder=${isResponder}">
+    <div class="chat-breadcrumb"><a th:href="@{/events/{id}(id=${event.id})}">← Back to event</a></div>
+    <section class="chat-layout">
+        <div class="chat-main card">
+            <div class="chat-header">
+                <div class="chat-avatar">D</div>
+                <div>
+                    <div class="chat-eyebrow">Event support</div>
+                    <h1>Questions about the event</h1>
+                    <p>Ask a question about <strong th:text="${event.title}">the event</strong>. A manager or the organizer will reply personally.</p>
+                </div>
+                <span class="chat-online"><i></i> The team is online</span>
+            </div>
+
+            <div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+            <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+
+            <div class="chat-thread" th:if="${!questions.isEmpty()}">
+                <div class="chat-item" th:each="item : ${questions}" th:attr="data-question-id=${item.id}">
+                    <div class="chat-message chat-message-user">
+                        <div class="chat-message-meta"><strong th:text="${item.askedBy.name}">User</strong><span th:text="${#temporals.format(item.createdAt, 'dd.MM.yyyy HH:mm')}">today</span></div>
+                        <p th:text="${item.question}">Question</p>
+                    </div>
+                    <div class="chat-message chat-message-manager" th:if="${item.answer != null}">
+                        <div class="chat-message-meta"><strong th:text="${item.answeredBy.name}">Responder</strong><span class="manager-label">Team</span><span th:text="${#temporals.format(item.answeredAt, 'dd.MM.yyyy HH:mm')}">today</span></div>
+                        <p th:text="${item.answer}">Answer</p>
+                    </div>
+                    <div class="chat-pending" th:if="${item.answer == null}"><span class="pending-dot"></span> Waiting for a reply</div>
+                    <div class="manager-reply" th:if="${isResponder and item.answer == null}">
+                        <form class="live-answer-form" method="post" th:action="@{/events/chat/questions/{questionId}/answer(questionId=${item.id})}">
+                            <label th:for="'answer-' + ${item.id}">Your reply</label>
+                            <div class="chat-compose compact"><textarea th:id="'answer-' + ${item.id}" name="answer" required maxlength="5000" placeholder="Write a reply as a manager or organizer..."></textarea><button class="btn" type="submit">Reply</button></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-empty" th:if="${questions.isEmpty()}">
+                <div class="chat-empty-icon">💬</div>
+                <h2>Start the conversation</h2>
+                <p>Your questions and personal replies from the team will appear here.</p>
+            </div>
+
+            <form class="chat-compose" method="post" th:action="@{/events/{id}/chat/questions(id=${event.id})}" sec:authorize="isAuthenticated()">
+                <label for="question">Your question</label>
+                <div class="chat-compose-row"><textarea id="question" name="question" required maxlength="2000" placeholder="For example: Where is the event entrance?"></textarea><button class="btn" type="submit">Send <span>➤</span></button></div>
+                <small>The reply will be added to this chat when a team member reviews it.</small>
+            </form>
+        </div>
+
+        <aside class="chat-sidebar">
+            <div class="card chat-info-card">
+                <div class="chat-sidebar-icon">✦</div>
+                <h2>Event information</h2>
+                <p>Ask about the schedule, venue, registration or any other event detail.</p>
+                <div class="chat-tip"><span>✓</span> One question per message</div>
+                <div class="chat-tip"><span>✓</span> Keep questions clear and specific</div>
+                <div class="chat-tip"><span>✓</span> The history stays with the event</div>
+            </div>
+            <div class="card manager-queue" th:if="${isResponder}">
+                <div class="queue-heading"><h2>Pending questions</h2><span class="queue-count" th:text="${pendingQuestions.size()}">0</span></div>
+                <p class="queue-description">Reply to questions about this event.</p>
+                <div class="queue-item" th:each="pending : ${pendingQuestions}" th:if="${pending.event.id == event.id}">
+                    <strong th:text="${pending.askedBy.name}">User</strong><span th:text="${#strings.abbreviate(pending.question, 62)}">Question</span>
+                </div>
+                <p class="queue-empty" th:if="${pendingForEvent.isEmpty()}">There are no pending questions for this event.</p>
+            </div>
+        </aside>
+    </section>
+</main>
+<script>
+(function () {
+    const page = document.querySelector('.chat-page');
+    const eventId = page.dataset.eventId;
+    const isResponder = page.dataset.isResponder === 'true';
+    const protocol = location.protocol === 'https:' ? 'wss://' : 'ws://';
+    let socket;
+    let connected = false;
+    const pendingSends = [];
+
+    function frame(command, headers, body) {
+        return command + '\n' + Object.entries(headers || {}).map(([key, value]) => key + ':' + value).join('\n') + '\n\n' + (body || '') + '\0';
+    }
+    function send(command, headers, body) {
+        const message = frame(command, headers, body);
+        if (connected) socket.send(message); else pendingSends.push(message);
+    }
+    function escapeHtml(value) {
+        return String(value || '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]));
+    }
+    function thread() {
+        let element = document.querySelector('.chat-thread');
+        if (!element) {
+            element = document.createElement('div');
+            element.className = 'chat-thread';
+            document.querySelector('.chat-empty')?.remove();
+            document.querySelector('.chat-compose')?.before(element);
+        }
+        return element;
+    }
+    function addQuestion(message) {
+        if (document.querySelector('[data-question-id="' + message.id + '"]')) return;
+        const item = document.createElement('div');
+        item.className = 'chat-item';
+        item.dataset.questionId = message.id;
+        item.innerHTML = '<div class="chat-message chat-message-user"><div class="chat-message-meta"><strong>' + escapeHtml(message.askedBy) + '</strong><span>just now</span></div><p>' + escapeHtml(message.question) + '</p></div>'
+            + '<div class="chat-pending"><span class="pending-dot"></span> Waiting for a reply</div>'
+            + (isResponder ? '<div class="manager-reply"><form class="live-answer-form"><label>Your reply</label><div class="chat-compose compact"><textarea name="answer" required maxlength="5000" placeholder="Write a reply as a manager or organizer..."></textarea><button class="btn" type="submit">Reply</button></div></form></div>' : '');
+        thread().appendChild(item);
+    }
+    function addAnswer(message) {
+        const item = document.querySelector('[data-question-id="' + message.id + '"]');
+        if (!item || item.querySelector('.chat-message-manager')) return;
+        item.querySelector('.chat-pending')?.remove();
+        item.querySelector('.manager-reply')?.remove();
+        const answer = document.createElement('div');
+        answer.className = 'chat-message chat-message-manager';
+        answer.innerHTML = '<div class="chat-message-meta"><strong>' + escapeHtml(message.answeredBy) + '</strong><span class="manager-label">Team</span><span>just now</span></div><p>' + escapeHtml(message.answer) + '</p>';
+        item.appendChild(answer);
+    }
+    function handleMessage(body) {
+        if (!body) return;
+        const message = JSON.parse(body);
+        // Every participant should see the new user bubble. Responders additionally
+        // get the reply form, which addQuestion renders for them.
+        if (message.type === 'QUESTION') addQuestion(message);
+        if (message.type === 'ANSWER') addAnswer(message);
+    }
+    function connect() {
+        socket = new WebSocket(protocol + location.host + '/ws');
+        // CONNECT is the STOMP handshake and must be sent immediately after the
+        // WebSocket opens; it cannot wait in the application message queue.
+        socket.onopen = () => socket.send(frame('CONNECT', {'accept-version':'1.2', 'host':location.host}));
+        socket.onmessage = event => {
+            const raw = event.data;
+            if (raw.startsWith('CONNECTED')) {
+                connected = true;
+                send('SUBSCRIBE', {id:'event-' + eventId, destination:'/topic/events/' + eventId, ack:'auto'});
+                while (pendingSends.length) socket.send(pendingSends.shift());
+            } else if (raw.startsWith('MESSAGE')) {
+                const body = raw.split('\n\n')[1]?.replace(/\0$/, '');
+                handleMessage(body);
+            }
+        };
+        socket.onclose = () => { connected = false; setTimeout(connect, 3000); };
+    }
+    document.querySelector('form.chat-compose')?.addEventListener('submit', function (event) {
+        event.preventDefault();
+        const input = this.querySelector('[name="question"]');
+        if (!input.value.trim()) return;
+        send('SEND', {destination:'/app/events/' + eventId + '/questions', 'content-type':'application/json'}, JSON.stringify({text:input.value.trim()}));
+        input.value = '';
+    });
+    document.addEventListener('submit', function (event) {
+        if (!event.target.matches('.live-answer-form')) return;
+        event.preventDefault();
+        const item = event.target.closest('[data-question-id]');
+        const input = event.target.querySelector('[name="answer"]');
+        if (!input.value.trim()) return;
+        send('SEND', {destination:'/app/events/' + eventId + '/questions/' + item.dataset.questionId + '/answer', 'content-type':'application/json'}, JSON.stringify({text:input.value.trim()}));
+        input.value = '';
+    });
+    connect();
+})();
+</script>
+</body>
+</html>

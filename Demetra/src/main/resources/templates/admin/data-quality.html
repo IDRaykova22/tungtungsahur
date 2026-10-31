@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data quality | Administration | Demetra</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" th:href="@{/images/favicon.svg}">
+</head>
+<body>
+<div th:replace="~{fragments/nav :: nav}"></div>
+<main class="page-container admin-page data-quality-page">
+    <header class="page-header report-section-header">
+        <div>
+            <div class="breadcrumbs"><a th:href="@{/reports}">Reports</a> / Administration</div>
+            <h1>Data quality</h1>
+            <p class="event-meta">Read-only checks for invalid database records and expired sessions.</p>
+        </div>
+        <a class="btn btn-secondary" th:href="@{/reports}">Back to reports</a>
+    </header>
+
+    <section class="card report-section">
+        <div class="report-section-header">
+            <h2>Invalid database records</h2>
+            <span class="badge badge-full" th:text="${report.invalidRecords.size()}">0</span>
+        </div>
+        <p class="event-meta">These records are flagged by application validation rules. No data was changed.</p>
+        <div class="report-table-container" th:if="${!report.invalidRecords.isEmpty()}">
+            <table class="report-table">
+                <thead><tr><th>Type</th><th>ID</th><th>Issue</th><th>Details</th></tr></thead>
+                <tbody>
+                <tr th:each="finding : ${report.invalidRecords}">
+                    <td th:text="${finding.recordType}">Event</td>
+                    <td th:text="${finding.recordId}">1</td>
+                    <td><span class="badge badge-full" th:text="${finding.issue}">Invalid field</span></td>
+                    <td th:text="${finding.details}">Details</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="data-quality-empty" th:if="${report.invalidRecords.isEmpty()}">No invalid records were found.</div>
+    </section>
+
+    <section class="card report-section">
+        <div class="report-section-header">
+            <h2>Expired sessions</h2>
+            <span class="badge badge-waitlisted" th:text="${report.expiredSessions.size()}">0</span>
+        </div>
+        <p class="event-meta">Sessions that remain in the Spring Session database after their expiration time.</p>
+        <div class="report-table-container" th:if="${!report.expiredSessions.isEmpty()}">
+            <table class="report-table">
+                <thead><tr><th>Session ID</th><th>User</th><th>Created</th><th>Last access</th><th>Expired</th></tr></thead>
+                <tbody>
+                <tr th:each="session : ${report.expiredSessions}">
+                    <td class="session-id" th:text="${session.sessionId}">session-id</td>
+                    <td th:text="${session.principalName ?: 'Anonymous'}">Anonymous</td>
+                    <td th:text="${session.createdAt}">date</td>
+                    <td th:text="${session.lastAccessAt}">date</td>
+                    <td th:text="${session.expiresAt}">date</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="data-quality-empty" th:if="${report.expiredSessions.isEmpty()}">No expired sessions were found.</div>
+    </section>
+</main>
+</body>
+</html>

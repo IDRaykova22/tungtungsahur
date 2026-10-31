@@ -73,7 +73,7 @@ public class RegistrationStatsService {
 
         Series chart;
         double[] history;
-        String unit = "ден";
+        String unit = "day";
         int forecastSteps;
         String chartTitle;
         String nextLabel = null;
@@ -82,24 +82,24 @@ public class RegistrationStatsService {
                 chart = hourly(today, timestamps);
                 history = daily(today.minusDays(29), today.minusDays(1), timestamps).values();
                 forecastSteps = 1;
-                chartTitle = "Регистрации по часове днес";
+                chartTitle = "Registrations by hour today";
             }
             case WEEK, MONTH -> {
                 chart = daily(start, today, timestamps);
                 // Today is not over yet, so it would drag the trend down: the analysis uses complete days only.
                 history = Arrays.copyOf(chart.values(), chart.values().length - 1);
                 forecastSteps = (int) period.lengthInDays(today);
-                chartTitle = "Регистрации по дни";
-                nextLabel = "утре";
+                chartTitle = "Registrations by day";
+                nextLabel = "tomorrow";
             }
             default -> {
                 chart = monthly(start, today, timestamps);
                 // Only complete months: the current month is unfinished and the first one may be partial.
                 int from = start.getDayOfMonth() == 1 ? 0 : 1;
                 history = Arrays.copyOfRange(chart.values(), from, chart.values().length - 1);
-                unit = "месец";
+                unit = "month";
                 forecastSteps = 12;
-                chartTitle = "Регистрации по месеци";
+                chartTitle = "Registrations by month";
                 nextLabel = today.plusMonths(1).format(MONTH);
             }
         }
@@ -148,7 +148,7 @@ public class RegistrationStatsService {
         List<Boolean> show = new ArrayList<>();
         for (int hour = 0; hour < 24; hour++) {
             labels.add(String.format("%02d", hour));
-            longLabels.add(String.format("%02d:00–%02d:00", hour, (hour + 1) % 24));
+            longLabels.add(String.format("%02d:00-%02d:00", hour, (hour + 1) % 24));
             show.add(hour % 3 == 0);
         }
         return new Series(labels, longLabels, values, show);
@@ -212,7 +212,7 @@ public class RegistrationStatsService {
                     value, height(value, max), anomalies.contains(i), false, chart.showLabel().get(i)));
         }
         if (next != null) {
-            bars.add(new ChartBar(nextLabel, "Прогноза за " + nextLabel + ": около "
+            bars.add(new ChartBar(nextLabel, "Forecast for " + nextLabel + ": about "
                     + RegistrationInsights.registrations(Math.round(next)), next, height(next, max),
                     false, true, true));
         }

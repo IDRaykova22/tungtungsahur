@@ -31,10 +31,10 @@ public class VideoStorageService {
         }
         String contentType = file.getContentType() == null ? "" : file.getContentType().toLowerCase(Locale.ROOT);
         if (!ALLOWED_TYPES.contains(contentType)) {
-            throw new IllegalArgumentException("Позволени са само MP4 и WebM видеа.");
+            throw new IllegalArgumentException("Only MP4 and WebM videos are allowed.");
         }
         if (file.getSize() > MAX_SIZE) {
-            throw new IllegalArgumentException("Видеото не може да бъде по-голямо от 100 MB.");
+            throw new IllegalArgumentException("The video cannot be larger than 100 MB.");
         }
         String extension = "video/mp4".equals(contentType) ? ".mp4" : ".webm";
         String fileName = UUID.randomUUID() + extension;
@@ -43,7 +43,7 @@ public class VideoStorageService {
             Files.copy(file.getInputStream(), storageDirectory.resolve(fileName));
             return new StoredVideo(fileName, StringUtils.cleanPath(file.getOriginalFilename() == null ? fileName : file.getOriginalFilename()), contentType);
         } catch (IOException ex) {
-            throw new IllegalStateException("Видеото не може да бъде записано.", ex);
+            throw new IllegalStateException("The video could not be saved.", ex);
         }
     }
 
@@ -69,7 +69,7 @@ public class VideoStorageService {
     private Path safePath(String fileName) {
         Path path = storageDirectory.resolve(fileName).normalize();
         if (!path.getParent().equals(storageDirectory)) {
-            throw new IllegalArgumentException("Невалидно име на видео файл.");
+            throw new IllegalArgumentException("Invalid video file name.");
         }
         return path;
     }
